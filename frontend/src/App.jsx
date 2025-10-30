@@ -17,6 +17,9 @@ import SendLog from "@/pages/admins/SendLog";
 import Transaction from "@/pages/admins/Transaction";
 import User from "@/pages/admins/User";
 
+import Notification from "./pages/Notification";
+import Payment from "./pages/Payment";
+
 function App() {
   return (
     <BrowserRouter>
@@ -25,6 +28,9 @@ function App() {
         <Route element={<HomeLayout />}>
           <Route path="/" element={<Home />} />
         </Route>
+        {/* payment */}
+        <Route path="/payment" element={<Payment />} />
+
         {/* login */}
         <Route path="/login" element={<Login />} />
         <Route path="/sign-up" element={<SignUp />} />
@@ -38,10 +44,12 @@ function App() {
           <Route path="/admin/user" element={<User />} />
           {/* client */}
           <Route path="/dashboard" element={<DashBoard />} />
-          <Route path="/campaign" element={<Contact />} />
-          <Route path="/contact" element={<Campaign />} />
+          <Route path="/campaign" element={<Campaign />} />
+          <Route path="/contact" element={<Contact />} />
           <Route path="/package" element={<Package />} />
           <Route path="/template" element={<Template />} />
+
+          <Route path="/notification" element={<Notification />} />
         </Route>
       </Routes>
     </BrowserRouter>

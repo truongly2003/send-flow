@@ -10,15 +10,14 @@ import {
   LogOut,
   X,
   Settings,
-  BarChart,
   Shield,
   UserCog,
-  Mail,
+  User,
   Bell,
 } from "lucide-react";
 
 // Sidebar Component
-function Sidebar({ role = "user", isOpen=true, onClose }) {
+function Sidebar({ role = "user", isOpen = false, onClose }) {
   const [activeItem, setActiveItem] = useState("Thống kê");
   const navigate = useNavigate();
   // Menu items cho người dùng
@@ -28,6 +27,7 @@ function Sidebar({ role = "user", isOpen=true, onClose }) {
     { icon: Users, label: "Liên hệ", to: "/contact" },
     { icon: FileText, label: "Mẫu tin", to: "/template" },
     { icon: Package, label: "Gói dịch vụ", to: "/package" },
+    { icon: Bell, label: "Thông báo (2)", to: "/notification" },
   ];
 
   // Menu items cho quản trị viên
@@ -37,6 +37,7 @@ function Sidebar({ role = "user", isOpen=true, onClose }) {
     { icon: Package, label: "Gói dịch vụ", to: "/admin/package" },
     { icon: Shield, label: "Giao dịch", to: "/admin/transaction" },
     { icon: Settings, label: "Giám sát", to: "/admin/sendlog" },
+    { icon: Bell, label: "Thông báo (2)", to: "/notification" },
   ];
 
   const menuItems = role === "admin" ? adminMenuItems : userMenuItems;
@@ -44,6 +45,9 @@ function Sidebar({ role = "user", isOpen=true, onClose }) {
   const handleItemClick = (item) => {
     setActiveItem(item.label);
     navigate(item.to);
+    if (window.innerWidth < 768) {
+      onClose();
+    }
   };
 
   return (
@@ -89,7 +93,16 @@ function Sidebar({ role = "user", isOpen=true, onClose }) {
       </nav>
 
       {/* Footer - Logout */}
-      <div className="border-t border-gray-700">
+      <div className=" border-gray-700">
+        <div className="flex items-center gap-3 px-6 py-4 border-b border-gray-700">
+          <div className="w-10 h-10 bg-gray-700 rounded-full flex items-center justify-center flex-shrink-0">
+            <User size={20} className="text-gray-300" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-medium text-white truncate">Truong</p>
+            <p className="text-xs text-gray-400 truncate">Email</p>
+          </div>
+        </div>
         <button
           onClick={() => console.log("Logout clicked")}
           className="w-full flex items-center gap-4 px-6 py-4 hover:bg-gray-800 transition-colors text-red-400"
