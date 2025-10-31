@@ -1,0 +1,14 @@
+spring:
+  application:
+    name: send flow
+  datasource:
+    url: jdbc:mysql://localhost:3306/user_finance
+    driverClassName: com.mysql.cj.jdbc.Driver
+    username: root
+    password: root
+
+
+jwt:
+  secret: ${SECRET}
+  access-token-expiration: 10000000
+  refresh-token-expiration: 2000000

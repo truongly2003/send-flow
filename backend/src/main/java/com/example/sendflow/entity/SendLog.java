@@ -1,0 +1,41 @@
+package com.example.sendflow.entity;
+
+import com.example.sendflow.enums.EventStatus;
+import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.NoArgsConstructor;
+import org.hibernate.annotations.CreationTimestamp;
+
+import java.time.LocalDateTime;
+
+@Entity
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
+public class SendLog {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "campaign_id", nullable = false)
+    private Campaign campaign;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "contact_id", nullable = false)
+    private Contact contact;
+
+    @CreationTimestamp
+    private LocalDateTime sentAt;
+
+    @Enumerated(EnumType.STRING)
+    private EventStatus status = EventStatus.SENT;
+
+    @Lob
+    @Column( columnDefinition = "TEXT")
+    private String providerResponse;
+
+    private LocalDateTime createAt=LocalDateTime.now();
+    private LocalDateTime updateAt=LocalDateTime.now();
+}

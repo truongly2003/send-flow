@@ -1,0 +1,13 @@
+package com.example.sendflow;
+
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+@SpringBootApplication
+public class SendflowApplication {
+
+	public static void main(String[] args) {
+		SpringApplication.run(SendflowApplication.class, args);
+	}
+
+}
