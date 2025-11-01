@@ -10,6 +10,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
+@Table(name = "transactions")
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
@@ -32,6 +33,17 @@ public class Transaction {
     @Enumerated(EnumType.STRING)
     private PaymentStatus paymentStatus=PaymentStatus.PENDING;
 
-    private LocalDateTime createAt=LocalDateTime.now();
-    private LocalDateTime updateAt=LocalDateTime.now();
+    private LocalDateTime updatedAt;
+    private LocalDateTime createdAt;
+
+    @PrePersist
+    protected void onCreate() {
+        this.createdAt = LocalDateTime.now();
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        this.updatedAt = LocalDateTime.now();
+    }
 }

@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
 
 @Entity
+@Table(name = "`usage`")
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
@@ -24,7 +25,18 @@ public class Usage {
     private Integer setCount=0;
     private Integer recipient=0;
 
-    private LocalDateTime createAt=LocalDateTime.now();
-    private LocalDateTime updateAt=LocalDateTime.now();
+    private LocalDateTime updatedAt;
+    private LocalDateTime createdAt;
+
+    @PrePersist
+    protected void onCreate() {
+        this.createdAt = LocalDateTime.now();
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        this.updatedAt = LocalDateTime.now();
+    }
 }
 

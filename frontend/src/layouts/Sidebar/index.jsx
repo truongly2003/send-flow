@@ -59,7 +59,7 @@ function Sidebar({ role = "user", isOpen = false, onClose }) {
       {/* Header */}
       <div className="flex items-center justify-between p-6 border-b border-gray-700">
         <h1 className="text-xl font-bold">
-          {role === "admin" ? "Admin Panel" : "ZaloMarketing"}
+          {role === "admin" ? "Admin Panel" : "Send Flow"}
         </h1>
         <button
           onClick={onClose}

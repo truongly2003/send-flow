@@ -12,6 +12,7 @@ import java.util.List;
 
 @Entity
 @Builder
+@Data
 @AllArgsConstructor
 @NoArgsConstructor
 public class User {
@@ -23,8 +24,19 @@ public class User {
     private String password;
     @Enumerated(EnumType.STRING)
     private Role role=Role.USER;
-    private LocalDateTime createdAt=LocalDateTime.now();
-    private LocalDateTime updatedAt=LocalDateTime.now();
+    private LocalDateTime updatedAt;
+    private LocalDateTime createdAt;
+
+    @PrePersist
+    protected void onCreate() {
+        this.createdAt = LocalDateTime.now();
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        this.updatedAt = LocalDateTime.now();
+    }
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Subscription> subscriptions;

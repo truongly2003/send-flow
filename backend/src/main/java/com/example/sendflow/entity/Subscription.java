@@ -32,8 +32,19 @@ public class Subscription {
     @Enumerated(EnumType.STRING)
     private SubscriptionStatus status=SubscriptionStatus.ACTIVE;
 
-    private LocalDateTime createAt=LocalDateTime.now();
-    private LocalDateTime updateAt=LocalDateTime.now();
+    private LocalDateTime updatedAt;
+    private LocalDateTime createdAt;
+
+    @PrePersist
+    protected void onCreate() {
+        this.createdAt = LocalDateTime.now();
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        this.updatedAt = LocalDateTime.now();
+    }
 
     @OneToMany(mappedBy = "subscription", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Usage> usages;
