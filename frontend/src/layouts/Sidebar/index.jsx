@@ -26,7 +26,7 @@ function Sidebar({ role = "user", isOpen = false, onClose }) {
     { icon: Send, label: "Chiến dịch", to: "/campaign" },
     { icon: Users, label: "Liên hệ", to: "/contact" },
     { icon: FileText, label: "Mẫu tin", to: "/template" },
-    { icon: Package, label: "Gói dịch vụ", to: "/package" },
+    { icon: Package, label: "Gói dịch vụ", to: "/plan" },
     { icon: Bell, label: "Thông báo (2)", to: "/notification" },
   ];
 

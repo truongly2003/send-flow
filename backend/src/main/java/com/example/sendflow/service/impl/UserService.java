@@ -1,4 +1,10 @@
 package com.example.sendflow.service.impl;
 
-public class UserService {
+import com.example.sendflow.service.IUserService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+
+@Service
+@RequiredArgsConstructor
+public class UserService implements IUserService {
 }

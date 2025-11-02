@@ -1,4 +1,10 @@
 package com.example.sendflow.service.impl;
 
-public class TemplateService {
+import com.example.sendflow.service.ITemplateService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+
+@Service
+@RequiredArgsConstructor
+public class TemplateService implements ITemplateService {
 }

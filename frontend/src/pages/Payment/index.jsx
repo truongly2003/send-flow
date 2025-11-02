@@ -94,7 +94,7 @@ function Payment() {
         {/* Header */}
         <div className="mb-8">
           <button
-            onClick={() => navigate("/package")}
+            onClick={() => navigate("/plan")}
             className="flex items-center gap-2 text-gray-400 hover:text-white mb-4 transition-colors"
           >
             <ArrowLeft size={20} />

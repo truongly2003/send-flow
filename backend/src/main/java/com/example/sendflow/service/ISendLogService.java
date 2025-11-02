@@ -1,4 +1,4 @@
 package com.example.sendflow.service;
 
-public interface IPackageService {
+public interface ISendLogService {
 }

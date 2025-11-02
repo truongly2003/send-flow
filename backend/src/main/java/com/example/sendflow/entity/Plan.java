@@ -3,9 +3,7 @@ package com.example.sendflow.entity;
 import com.example.sendflow.enums.Period;
 import com.example.sendflow.enums.Status;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -14,6 +12,7 @@ import java.util.List;
 @Entity
 @Table(name = "plans")
 @Builder
+@Data
 @AllArgsConstructor
 @NoArgsConstructor
 public class Plan {
@@ -53,9 +52,8 @@ public class Plan {
     protected void onUpdate() {
         this.updatedAt = LocalDateTime.now();
     }
+    @ToString.Exclude
     @OneToMany(mappedBy = "plan", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Subscription> subscriptions;
-
-
 
 }

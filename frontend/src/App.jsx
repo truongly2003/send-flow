@@ -8,7 +8,7 @@ import SignUp from "@/pages/users/SignUp";
 import DashBoard from "@/pages/clients/DashBoard";
 import Contact from "@/pages/clients/Contact";
 import Campaign from "@/pages/clients/Campaign";
-import Package from "@/pages/clients/Package";
+import Plan from "@/pages/clients/Plan";
 import Template from "@/pages/clients/Template";
 
 import DashBoardAdmin from "@/pages/admins/DashBoard";
@@ -46,7 +46,7 @@ function App() {
           <Route path="/dashboard" element={<DashBoard />} />
           <Route path="/campaign" element={<Campaign />} />
           <Route path="/contact" element={<Contact />} />
-          <Route path="/package" element={<Package />} />
+          <Route path="/plan" element={<Plan />} />
           <Route path="/template" element={<Template />} />
 
           <Route path="/notification" element={<Notification />} />

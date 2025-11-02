@@ -1,3 +1,6 @@
+server:
+  servlet:
+    context-path: /send-flow/api
 spring:
   application:
     name: send flow
