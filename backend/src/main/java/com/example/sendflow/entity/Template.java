@@ -28,6 +28,7 @@ public class Template {
     private TemplateType type=TemplateType.HTML;
 
     private String subject;
+
     @Column(columnDefinition = "TEXT")
     private String body;
 

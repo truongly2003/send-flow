@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Plus,
   Search,
@@ -12,50 +12,46 @@ import {
   Eye,
   Send,
   FileText,
+  Trash2,
+  Edit,
+  X,
 } from "lucide-react";
+import { LoadingSpinner } from "@components/LoadingSpinner";
+import { ErrorDisplay } from "@components/ErrorDisplay";
+import { campaignApi } from "@services/campaignApi";
+import { formatVNDate } from "@configs/formatVNDate";
 
 function Campaign() {
-  const [activeTab, setActiveTab] = useState("list"); // list, create, detail
   const [filterStatus, setFilterStatus] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCampaign, setSelectedCampaign] = useState(null);
 
-  // Sample data - thay bằng API
-  const [campaigns] = useState([
-    {
-      id: 1,
-      name: "Summer Sale 2025",
-      template: "Promo Template 1",
-      status: "completed",
-      scheduleTime: "2025-10-28 09:00",
-      sentCount: 1180,
-      recipientCount: 1200,
-      successRate: 98.3,
-      contactList: "VIP Customers",
-    },
-    {
-      id: 2,
-      name: "Product Launch",
-      template: "Announcement Template",
-      status: "scheduled",
-      scheduleTime: "2025-11-05 14:00",
-      sentCount: 0,
-      recipientCount: 850,
-      successRate: 0,
-      contactList: "All Subscribers",
-    },
-    {
-      id: 3,
-      name: "Newsletter Oct",
-      template: "Newsletter Template",
-      status: "sending",
-      scheduleTime: "2025-10-30 10:00",
-      sentCount: 650,
-      recipientCount: 980,
-      successRate: 66.3,
-      contactList: "Newsletter List",
-    },
-  ]);
+  const [campaigns, setCampaigns] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [showFormModal, setShowFormModal] = useState(false);
+
+  const userId = 1;
+
+  const fetchCampaigns = async () => {
+    try {
+      setLoading(true);
+      const response = await campaignApi.getAllCampaign(userId);
+      if (response.code === 2000) {
+        setCampaigns(response.data);
+      } else {
+        setError("Failed to fetch campaigns");
+      }
+    } catch (err) {
+      setError("Error fetching campaigns: " + err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchCampaigns();
+  }, [userId]);
 
   const [templates] = useState([
     { id: 1, name: "Promo Template 1", type: "email" },
@@ -70,6 +66,7 @@ function Campaign() {
   ]);
 
   const [newCampaign, setNewCampaign] = useState({
+    id: null,
     name: "",
     templateId: "",
     messageContent: "",
@@ -77,270 +74,151 @@ function Campaign() {
     contactListId: "",
   });
 
+  // -------------------- BADGE UI --------------------
   const getStatusBadge = (status) => {
     const styles = {
-      completed: "bg-green-400/10 text-green-400 border-green-400/20",
-      scheduled: "bg-blue-400/10 text-blue-400 border-blue-400/20",
-      sending: "bg-yellow-400/10 text-yellow-400 border-yellow-400/20",
-      failed: "bg-red-400/10 text-red-400 border-red-400/20",
+      COMPLETED: "bg-green-400/10 text-green-400 border-green-400/20",
+      SCHEDULED: "bg-blue-400/10 text-blue-400 border-blue-400/20",
+      SENDING: "bg-yellow-400/10 text-yellow-400 border-yellow-400/20",
+      FAILED: "bg-red-400/10 text-red-400 border-red-400/20",
     };
     const icons = {
-      completed: CheckCircle,
-      scheduled: Clock,
-      sending: Send,
-      failed: XCircle,
+      COMPLETED: CheckCircle,
+      SCHEDULED: Clock,
+      SENDING: Send,
+      FAILED: XCircle,
     };
     const labels = {
-      completed: "Hoàn thành",
-      scheduled: "Đã lên lịch",
-      sending: "Đang gửi",
-      failed: "Thất bại",
+      COMPLETED: "Hoàn thành",
+      SCHEDULED: "Đã lên lịch",
+      SENDING: "Đang gửi",
+      FAILED: "Thất bại",
     };
     const Icon = icons[status];
     return (
-      <span className={`px-3 py-1 rounded-full text-xs font-medium border flex items-center gap-1 w-fit ${styles[status]}`}>
+      <span
+        className={`px-3 py-1 rounded-full text-xs font-medium border flex items-center gap-1 w-fit ${styles[status]}`}
+      >
         <Icon size={14} />
         {labels[status]}
       </span>
     );
   };
 
-  const filteredCampaigns = campaigns.filter((campaign) => {
-    const matchesStatus = filterStatus === "all" || campaign.status === filterStatus;
-    const matchesSearch = campaign.name.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesStatus && matchesSearch;
-  });
+  // -------------------- CRUD --------------------
 
-  const handleCreateCampaign = () => {
-    console.log("Creating campaign:", newCampaign);
-    // API call here
-    setActiveTab("list");
+  const handleOpenForm = (campaign = null) => {
+    if (campaign) {
+      setNewCampaign({
+        id: campaign.id,
+        name: campaign.name,
+        templateId: campaign.templateId,
+        messageContent: campaign.messageContent,
+        scheduleTime: campaign.scheduleTime,
+        contactListId: campaign.contactListId,
+      });
+    } else {
+      setNewCampaign({
+        id: null,
+        name: "",
+        templateId: "",
+        messageContent: "",
+        scheduleTime: "",
+        contactListId: "",
+      });
+    }
+    setShowFormModal(true);
+  };
+
+  const handleSubmitCampaign = async () => {
+    try {
+      const payload = { ...newCampaign, userId };
+      let response;
+
+      if (newCampaign.id) {
+        // Cập nhật
+        response = await campaignApi.updateCampaign(newCampaign.id, payload);
+      } else {
+        // Thêm mới
+        response = await campaignApi.createCampaign(payload);
+      }
+
+      if (response.code === 2000) {
+        await fetchCampaigns();
+        setShowFormModal(false);
+        alert(response.message);
+      }
+    } catch (err) {
+      alert("Lỗi khi lưu chiến dịch: " + err.message);
+    }
+  };
+
+  const handleDeleteCampaign = async (id) => {
+    if (!window.confirm("Bạn có chắc chắn muốn xóa chiến dịch này?")) return;
+    try {
+      const response = await campaignApi.deleteCampaign(id);
+      if (response.code === 2000) {
+        setCampaigns((prev) => prev.filter((c) => c.id !== id));
+      } else {
+        alert("Không thể xóa chiến dịch!");
+      }
+    } catch (err) {
+      alert("Lỗi khi xóa chiến dịch: " + err.message);
+    }
   };
 
   const handleViewDetail = (campaign) => {
     setSelectedCampaign(campaign);
-    setActiveTab("detail");
+    alert("Chi tiết chiến dịch: " + campaign.name);
   };
 
-  // Create Campaign Form
-  if (activeTab === "create") {
-    return (
-      <div className="min-h-screen bg-gray-950 text-white p-6">
-        <div className="max-w-4xl mx-auto">
-          <div className="flex items-center justify-between mb-6">
-            <div>
-              <h1 className="text-3xl font-bold mb-2">Tạo chiến dịch mới</h1>
-              <p className="text-gray-400">Thiết lập chiến dịch email marketing</p>
-            </div>
-            <button
-              onClick={() => setActiveTab("list")}
-              className="px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded-lg transition-colors"
-            >
-              Hủy
-            </button>
-          </div>
+  // -------------------- FILTER --------------------
+  const filteredCampaigns = campaigns.filter((campaign) => {
+    const matchesStatus =
+      filterStatus === "all" || campaign.status === filterStatus;
+    const matchesSearch = campaign.name
+      .toLowerCase()
+      .includes(searchQuery.toLowerCase());
+    return matchesStatus && matchesSearch;
+  });
 
-          <div className="bg-gray-900 border border-gray-800 rounded-xl p-6 space-y-6">
-            {/* Campaign Name */}
-            <div>
-              <label className="block text-sm font-medium mb-2">Tên chiến dịch</label>
-              <input
-                type="text"
-                value={newCampaign.name}
-                onChange={(e) => setNewCampaign({ ...newCampaign, name: e.target.value })}
-                placeholder="Ví dụ: Summer Sale 2025"
-                className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg focus:outline-none focus:border-blue-500"
-              />
-            </div>
-
-            {/* Template Selection */}
-            <div>
-              <label className="block text-sm font-medium mb-2">Chọn template</label>
-              <select
-                value={newCampaign.templateId}
-                onChange={(e) => setNewCampaign({ ...newCampaign, templateId: e.target.value })}
-                className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg focus:outline-none focus:border-blue-500"
-              >
-                <option value="">-- Chọn template --</option>
-                {templates.map((template) => (
-                  <option key={template.id} value={template.id}>
-                    {template.name} ({template.type})
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            {/* Message Content */}
-            <div>
-              <label className="block text-sm font-medium mb-2">Nội dung tin nhắn</label>
-              <textarea
-                value={newCampaign.messageContent}
-                onChange={(e) => setNewCampaign({ ...newCampaign, messageContent: e.target.value })}
-                placeholder="Nhập nội dung email..."
-                rows={6}
-                className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg focus:outline-none focus:border-blue-500 resize-none"
-              />
-            </div>
-
-            {/* Contact List */}
-            <div>
-              <label className="block text-sm font-medium mb-2">Danh sách liên hệ</label>
-              <select
-                value={newCampaign.contactListId}
-                onChange={(e) => setNewCampaign({ ...newCampaign, contactListId: e.target.value })}
-                className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg focus:outline-none focus:border-blue-500"
-              >
-                <option value="">-- Chọn danh sách --</option>
-                {contactLists.map((list) => (
-                  <option key={list.id} value={list.id}>
-                    {list.name} ({list.count} liên hệ)
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            {/* Schedule Time */}
-            <div>
-              <label className="block text-sm font-medium mb-2">Thời gian lên lịch</label>
-              <input
-                type="datetime-local"
-                value={newCampaign.scheduleTime}
-                onChange={(e) => setNewCampaign({ ...newCampaign, scheduleTime: e.target.value })}
-                className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg focus:outline-none focus:border-blue-500"
-              />
-            </div>
-
-            {/* Submit Button */}
-            <button
-              onClick={handleCreateCampaign}
-              className="w-full py-3 bg-blue-600 hover:bg-blue-700 rounded-lg font-semibold transition-colors flex items-center justify-center gap-2"
-            >
-              <Calendar size={20} />
-              Lên lịch gửi
-            </button>
-          </div>
-        </div>
-      </div>
-    );
+  // -------------------- UI --------------------
+  if (loading) {
+    return <LoadingSpinner message="Đang tải chiến dịch..." />;
   }
 
-  // Campaign Detail
-  if (activeTab === "detail" && selectedCampaign) {
-    return (
-      <div className="min-h-screen bg-gray-950 text-white p-6">
-        <div className="max-w-6xl mx-auto">
-          <div className="flex items-center justify-between mb-6">
-            <div>
-              <h1 className="text-3xl font-bold mb-2">{selectedCampaign.name}</h1>
-              <p className="text-gray-400">Chi tiết chiến dịch</p>
-            </div>
-            <button
-              onClick={() => setActiveTab("list")}
-              className="px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded-lg transition-colors"
-            >
-              Quay lại
-            </button>
-          </div>
-
-          {/* Status Overview */}
-          <div className="bg-gray-900 border border-gray-800 rounded-xl p-6 mb-6">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-4">
-                {getStatusBadge(selectedCampaign.status)}
-                <div className="text-sm text-gray-400">
-                  <Calendar className="inline mr-1" size={16} />
-                  {selectedCampaign.scheduleTime}
-                </div>
-              </div>
-              <button className="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors flex items-center gap-2">
-                <Eye size={18} />
-                Xem Send Log
-              </button>
-            </div>
-
-            <div className="grid grid-cols-3 gap-4">
-              <div className="bg-gray-800/50 rounded-lg p-4">
-                <div className="flex items-center gap-2 mb-2">
-                  <Send className="text-blue-400" size={20} />
-                  <span className="text-sm text-gray-400">Đã gửi</span>
-                </div>
-                <p className="text-2xl font-bold">{selectedCampaign.sentCount.toLocaleString()}</p>
-              </div>
-
-              <div className="bg-gray-800/50 rounded-lg p-4">
-                <div className="flex items-center gap-2 mb-2">
-                  <Users className="text-purple-400" size={20} />
-                  <span className="text-sm text-gray-400">Người nhận</span>
-                </div>
-                <p className="text-2xl font-bold">{selectedCampaign.recipientCount.toLocaleString()}</p>
-              </div>
-
-              <div className="bg-gray-800/50 rounded-lg p-4">
-                <div className="flex items-center gap-2 mb-2">
-                  <CheckCircle className="text-green-400" size={20} />
-                  <span className="text-sm text-gray-400">Tỷ lệ thành công</span>
-                </div>
-                <p className="text-2xl font-bold text-green-400">{selectedCampaign.successRate}%</p>
-              </div>
-            </div>
-          </div>
-
-          {/* Chart Placeholder */}
-          <div className="bg-gray-900 border border-gray-800 rounded-xl p-6 mb-6">
-            <h2 className="text-xl font-semibold mb-4">Biểu đồ thống kê</h2>
-            <div className="h-64 bg-gray-800/30 rounded-lg flex items-center justify-center">
-              <p className="text-gray-500">Chart: Sent Count vs Recipient Count</p>
-            </div>
-          </div>
-
-          {/* Campaign Info */}
-          <div className="bg-gray-900 border border-gray-800 rounded-xl p-6">
-            <h2 className="text-xl font-semibold mb-4">Thông tin chiến dịch</h2>
-            <div className="space-y-3 text-sm">
-              <div className="flex justify-between py-2 border-b border-gray-800">
-                <span className="text-gray-400">Template:</span>
-                <span className="font-medium">{selectedCampaign.template}</span>
-              </div>
-              <div className="flex justify-between py-2 border-b border-gray-800">
-                <span className="text-gray-400">Danh sách liên hệ:</span>
-                <span className="font-medium">{selectedCampaign.contactList}</span>
-              </div>
-              <div className="flex justify-between py-2">
-                <span className="text-gray-400">Thời gian lên lịch:</span>
-                <span className="font-medium">{selectedCampaign.scheduleTime}</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
+  if (error) {
+    return <ErrorDisplay message={error} onRetry={fetchCampaigns} />;
   }
 
-  // Campaign List
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-6">
+    <div className="min-h-screen bg-gray-950 text-white p-6 relative">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <div>
             <h1 className="text-3xl font-bold mb-2">Chiến dịch</h1>
-            <p className="text-gray-400">Quản lý các chiến dịch email marketing</p>
+            <p className="text-gray-400">
+              Quản lý các chiến dịch email marketing
+            </p>
           </div>
           <button
-            onClick={() => setActiveTab("create")}
+            onClick={() => handleOpenForm()}
             className="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg font-semibold transition-colors flex items-center gap-2"
           >
             <Plus size={20} />
-            Tạo chiến dịch mới
+            Tạo chiến dịch
           </button>
         </div>
 
         {/* Filters */}
         <div className="bg-gray-900 border border-gray-800 rounded-xl p-4 mb-6">
           <div className="flex items-center gap-4">
-            {/* Search */}
             <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+              <Search
+                className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+                size={20}
+              />
               <input
                 type="text"
                 placeholder="Tìm kiếm chiến dịch..."
@@ -349,8 +227,6 @@ function Campaign() {
                 className="w-full pl-10 pr-4 py-2 bg-gray-800 border border-gray-700 rounded-lg focus:outline-none focus:border-blue-500"
               />
             </div>
-
-            {/* Status Filter */}
             <div className="flex items-center gap-2">
               <Filter size={20} className="text-gray-400" />
               <select
@@ -359,16 +235,16 @@ function Campaign() {
                 className="px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg focus:outline-none focus:border-blue-500"
               >
                 <option value="all">Tất cả</option>
-                <option value="completed">Hoàn thành</option>
-                <option value="scheduled">Đã lên lịch</option>
-                <option value="sending">Đang gửi</option>
-                <option value="failed">Thất bại</option>
+                <option value="COMPLETED">Hoàn thành</option>
+                <option value="SCHEDULED">Đã lên lịch</option>
+                <option value="SENDING">Đang gửi</option>
+                <option value="FAILED">Thất bại</option>
               </select>
             </div>
           </div>
         </div>
 
-        {/* Campaign List */}
+        {/* List */}
         <div className="space-y-4">
           {filteredCampaigns.map((campaign) => (
             <div
@@ -377,19 +253,21 @@ function Campaign() {
             >
               <div className="flex items-start justify-between mb-4">
                 <div className="flex-1">
-                  <h3 className="text-xl font-semibold mb-2">{campaign.name}</h3>
+                  <h3 className="text-xl font-semibold mb-2">
+                    {campaign.name}
+                  </h3>
                   <div className="flex items-center gap-4 text-sm text-gray-400">
                     <span className="flex items-center gap-1">
                       <FileText size={16} />
-                      {campaign.template}
+                      {campaign.templateName}
                     </span>
                     <span className="flex items-center gap-1">
                       <Users size={16} />
-                      {campaign.contactList}
+                      {campaign.contactListName}
                     </span>
                     <span className="flex items-center gap-1">
                       <Calendar size={16} />
-                      {campaign.scheduleTime}
+                      {formatVNDate(campaign.scheduleTime)}
                     </span>
                   </div>
                 </div>
@@ -397,40 +275,168 @@ function Campaign() {
                   {getStatusBadge(campaign.status)}
                   <button
                     onClick={() => handleViewDetail(campaign)}
-                    className="px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded-lg transition-colors flex items-center gap-2"
+                    className="px-3 py-2 bg-gray-800 hover:bg-gray-700 rounded-lg flex items-center gap-2"
                   >
                     <Eye size={18} />
-                    Chi tiết
+                  </button>
+                  <button
+                    onClick={() => handleOpenForm(campaign)}
+                    className="px-3 py-2 bg-gray-800 hover:bg-gray-700 rounded-lg flex items-center gap-2"
+                  >
+                    <Edit size={18} />
+                  </button>
+                  <button
+                    onClick={() => handleDeleteCampaign(campaign.id)}
+                    className="px-3 py-2 bg-red-600 hover:bg-red-700 rounded-lg flex items-center gap-2"
+                  >
+                    <Trash2 size={18} />
                   </button>
                 </div>
               </div>
 
-              {/* Stats */}
               <div className="grid grid-cols-3 gap-4 pt-4 border-t border-gray-800">
                 <div>
                   <p className="text-sm text-gray-400 mb-1">Đã gửi</p>
-                  <p className="text-lg font-semibold">{campaign.sentCount.toLocaleString()}</p>
+                  <p className="text-lg font-semibold">
+                    {campaign.sentCount.toLocaleString()}
+                  </p>
                 </div>
                 <div>
                   <p className="text-sm text-gray-400 mb-1">Người nhận</p>
-                  <p className="text-lg font-semibold">{campaign.recipientCount.toLocaleString()}</p>
+                  <p className="text-lg font-semibold">
+                    {campaign.receivedCount.toLocaleString()}
+                  </p>
                 </div>
                 <div>
                   <p className="text-sm text-gray-400 mb-1">Tỷ lệ thành công</p>
-                  <p className="text-lg font-semibold text-green-400">{campaign.successRate}%</p>
+                  <p className="text-lg font-semibold text-green-400">
+                    {campaign.sentCount > 0
+                      ? (
+                          (campaign.receivedCount / campaign.sentCount) *
+                          100
+                        ).toFixed(1) + "%"
+                      : "0%"}
+                  </p>
                 </div>
               </div>
             </div>
           ))}
-        </div>
 
-        {filteredCampaigns.length === 0 && (
-          <div className="bg-gray-900 border border-gray-800 rounded-xl p-12 text-center">
-            <Mail className="mx-auto mb-4 text-gray-600" size={48} />
-            <p className="text-gray-400">Không tìm thấy chiến dịch nào</p>
-          </div>
-        )}
+          {filteredCampaigns.length === 0 && (
+            <div className="bg-gray-900 border border-gray-800 rounded-xl p-12 text-center">
+              <Mail className="mx-auto mb-4 text-gray-600" size={48} />
+              <p className="text-gray-400">Không tìm thấy chiến dịch nào</p>
+            </div>
+          )}
+        </div>
       </div>
+
+      {/* Modal Form */}
+      {showFormModal && (
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
+          <div className="bg-gray-900 border border-gray-800 rounded-xl w-full max-w-2xl p-6 relative">
+            <button
+              onClick={() => setShowFormModal(false)}
+              className="absolute top-3 right-3 text-gray-400 hover:text-white"
+            >
+              <X size={20} />
+            </button>
+            <h2 className="text-2xl font-bold mb-4">
+              {newCampaign.id ? "Cập nhật chiến dịch" : "Tạo chiến dịch mới"}
+            </h2>
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm mb-1">Tên chiến dịch</label>
+                <input
+                  type="text"
+                  value={newCampaign.name}
+                  onChange={(e) =>
+                    setNewCampaign({ ...newCampaign, name: e.target.value })
+                  }
+                  className="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg"
+                  placeholder="Nhập tên chiến dịch"
+                />
+              </div>
+              <div>
+                <label className="block text-sm mb-1">Template</label>
+                <select
+                  value={newCampaign.templateId}
+                  onChange={(e) =>
+                    setNewCampaign({
+                      ...newCampaign,
+                      templateId: e.target.value,
+                    })
+                  }
+                  className="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg"
+                >
+                  <option value="">-- Chọn template --</option>
+                  {templates.map((t) => (
+                    <option key={t.id} value={t.id}>
+                      {t.name} ({t.type})
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm mb-1">Nội dung</label>
+                <textarea
+                  value={newCampaign.messageContent}
+                  onChange={(e) =>
+                    setNewCampaign({
+                      ...newCampaign,
+                      messageContent: e.target.value,
+                    })
+                  }
+                  rows={4}
+                  className="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg resize-none"
+                ></textarea>
+              </div>
+              <div>
+                <label className="block text-sm mb-1">Danh sách liên hệ</label>
+                <select
+                  value={newCampaign.contactListId}
+                  onChange={(e) =>
+                    setNewCampaign({
+                      ...newCampaign,
+                      contactListId: e.target.value,
+                    })
+                  }
+                  className="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg"
+                >
+                  <option value="">-- Chọn danh sách --</option>
+                  {contactLists.map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.name} ({c.count} liên hệ)
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm mb-1">Thời gian gửi</label>
+                <input
+                  type="datetime-local"
+                  value={newCampaign.scheduleTime}
+                  onChange={(e) =>
+                    setNewCampaign({
+                      ...newCampaign,
+                      scheduleTime: e.target.value,
+                    })
+                  }
+                  className="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg"
+                />
+              </div>
+            </div>
+
+            <button
+              onClick={handleSubmitCampaign}
+              className="w-full mt-6 py-3 bg-blue-600 hover:bg-blue-700 rounded-lg font-semibold"
+            >
+              {newCampaign.id ? "Cập nhật chiến dịch" : "Tạo chiến dịch"}
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

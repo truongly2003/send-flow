@@ -56,7 +56,6 @@ function Plan() {
       setError("Error fetching plans: " + err.message);
     }
   };
-  console.log(currentSubscription);
   useEffect(() => {
     fetchPlans();
     fetchCurrentSubscription();

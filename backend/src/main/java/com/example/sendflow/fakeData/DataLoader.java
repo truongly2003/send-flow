@@ -139,14 +139,14 @@ public class DataLoader implements CommandLineRunner {
                 .plan(basicPlan)
                 .startTime(LocalDateTime.of(2025, 10, 1, 0, 0))  // 01/10/2025
                 .endTime(LocalDateTime.of(2025, 10, 31, 23, 59))  // Hôm nay hết hạn
-                .status(SubscriptionStatus.ACTIVE)
+                .status(SubscriptionStatus.EXPIRED)
                 .build();
         adminSub = subRepo.save(adminSub);
 
         Subscription userSub = Subscription.builder()
                 .user(admin)
                 .plan(basicPlan)
-                .startTime(LocalDateTime.of(2025, 10, 1, 0, 0))  // 01/10/2025
+                .startTime(LocalDateTime.of(2025, 12, 1, 0, 0))  // 01/10/2025
                 .endTime(LocalDateTime.of(2025, 10, 31, 23, 59))  // Hôm nay hết hạn
                 .status(SubscriptionStatus.ACTIVE)
                 .build();

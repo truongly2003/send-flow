@@ -28,7 +28,7 @@ public class Campaign {
     private Template template;
 
     @ManyToOne
-    @JoinColumn(name = "list_id")
+    @JoinColumn(name = "contact_list_id")
     private ContactList contactList;
 
     private LocalDateTime scheduleTime;
