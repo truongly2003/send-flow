@@ -18,6 +18,7 @@ import java.util.List;
 public class PlanController {
     private final IPlanService planService;
 
+    // Lấy tất cả
     @GetMapping
     public ResponseEntity<ApiResponse<List<PlanResponse>>> getAllPlans() {
         List<PlanResponse> planResponses = planService.getAllPlan();

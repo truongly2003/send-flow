@@ -6,10 +6,11 @@ import Login from "@/pages/users/Login";
 import SignUp from "@/pages/users/SignUp";
 
 import DashBoard from "@/pages/clients/DashBoard";
-import Contact from "@/pages/clients/Contact";
+import ContactList from "@/pages/clients/ContactList";
 import Campaign from "@/pages/clients/Campaign";
 import Plan from "@/pages/clients/Plan";
 import Template from "@/pages/clients/Template";
+import Contact from "@/pages/clients/ContactList/Contact"
 
 import DashBoardAdmin from "@/pages/admins/DashBoard";
 import PackageAdmin from "@/pages/admins/Package";
@@ -45,7 +46,8 @@ function App() {
           {/* client */}
           <Route path="/dashboard" element={<DashBoard />} />
           <Route path="/campaign" element={<Campaign />} />
-          <Route path="/contact" element={<Contact />} />
+          <Route path="/contact-list" element={<ContactList />} />
+           <Route path="/contact-list/:id" element={<Contact />} />
           <Route path="/plan" element={<Plan />} />
           <Route path="/template" element={<Template />} />
 

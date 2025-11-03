@@ -8,6 +8,8 @@ import com.example.sendflow.mapper.ContactMapper;
 import com.example.sendflow.repository.ContactRepository;
 import com.example.sendflow.service.IContactService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -19,11 +21,9 @@ public class ContactService implements IContactService {
     private final ContactRepository contactRepository;
     private final ContactMapper contactMapper;
     @Override
-    public List<ContactResponse> getAllContacts(Long contactListId) {
-        List<Contact> contacts=contactRepository.findAllByContactListId(contactListId);
-        return contacts.stream()
-                .map(contactMapper::toContactResponse)
-                .collect(Collectors.toList());
+    public Page<ContactResponse> getAllContacts(Long contactListId, Pageable pageable) {
+        Page<Contact> contacts = (Page<Contact>) contactRepository.findAllByContactListId(contactListId, pageable);
+        return contacts.map(contactMapper::toContactResponse);
     }
 
     @Override

@@ -23,6 +23,7 @@ public class ContactListService implements IContactListService {
     @Override
     public List<ContactListResponse> getAllContactList(Long userId) {
         List<ContactList> contactLists=contactListRepository.findAllByUserId(userId);
+
         return contactLists.stream().map(contactListMapper::toContactListResponse)
                 .collect(Collectors.toList());
     }
