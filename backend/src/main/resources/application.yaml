@@ -16,8 +16,6 @@ spring:
     properties:
       hibernate:
         dialect: org.hibernate.dialect.MySQL8Dialect
-
-
 jwt:
   secret: ${SECRET}
   access-token-expiration: 10000000

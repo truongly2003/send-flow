@@ -8,6 +8,10 @@ import SignUp from "@/pages/users/SignUp";
 import DashBoard from "@/pages/clients/DashBoard";
 import ContactList from "@/pages/clients/ContactList";
 import Campaign from "@/pages/clients/Campaign";
+import CampaignDetail from "@/pages/clients/Campaign/CampaignDetail";
+import SendLog from "@/pages/clients/Campaign/SendLog";
+// import SendLog from "../src/pages/clients/Campaign/SendLog.jsx"
+
 import Plan from "@/pages/clients/Plan";
 import Template from "@/pages/clients/Template";
 import TemplateDetail from "@/pages/clients/Template/TemplateDetail";
@@ -15,7 +19,6 @@ import Contact from "@/pages/clients/ContactList/Contact";
 
 import DashBoardAdmin from "@/pages/admins/DashBoard";
 import PackageAdmin from "@/pages/admins/Package";
-import SendLog from "@/pages/admins/SendLog";
 import Transaction from "@/pages/admins/Transaction";
 import User from "@/pages/admins/User";
 
@@ -41,12 +44,15 @@ function App() {
           {/* admin */}
           <Route path="/admin/dashboard" element={<DashBoardAdmin />} />
           <Route path="/admin/package" element={<PackageAdmin />} />
-          <Route path="/admin/sendlog" element={<SendLog />} />
           <Route path="/admin/transaction" element={<Transaction />} />
           <Route path="/admin/user" element={<User />} />
           {/* client */}
           <Route path="/dashboard" element={<DashBoard />} />
           <Route path="/campaign" element={<Campaign />} />
+          <Route path="/campaign/:id" element={<CampaignDetail />} />
+          <Route path="/campaign/:id/sendlog" element={<SendLog />} />
+
+
           <Route path="/contact-list" element={<ContactList />} />
           <Route path="/contact-list/:id" element={<Contact />} />
           <Route path="/plan" element={<Plan />} />

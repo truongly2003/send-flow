@@ -12,7 +12,7 @@ import {
   Save,
   Eye,
 } from "lucide-react";
-import { templateApi } from "@services/TemplateService";
+import { templateApi } from "@services/TemplateApi";
 import { LoadingSpinner } from "@components/LoadingSpinner";
 import { ErrorDisplay } from "@components/ErrorDisplay";
 import { formatVNDate } from "@configs/formatVNDate";

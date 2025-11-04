@@ -12,6 +12,7 @@ public interface CampaignMapper {
     @Mapping(target = "user.id", source = "userId")
     @Mapping(target = "contactList.id", source = "contactListId")
     @Mapping(target = "template.id", source = "templateId")
+    @Mapping(target = "status", source = "status")
     Campaign toCampaign(CampaignRequest campaignRequest);
 
     @Mapping(target = "userId", source = "user.id")

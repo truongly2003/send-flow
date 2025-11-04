@@ -24,8 +24,10 @@ public class Usage {
     private Subscription subscription;
 
     private String period;
-    private Integer setCount=0;
-    private Integer recipient=0;
+    private Integer emailCount = 0;
+    private Integer contactCount = 0;
+    private Integer campaignCount = 0;
+    private Integer templateCount = 0;
 
     private LocalDateTime updatedAt;
     private LocalDateTime createdAt;
