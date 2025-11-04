@@ -20,8 +20,8 @@ public class TemplateController {
 
 
     // Lấy tất cả
-    @GetMapping("/{userId}")
-    public ResponseEntity<ApiResponse<List<TemplateResponse>>> getAllTemplates(@PathVariable Long userId) {
+    @GetMapping
+    public ResponseEntity<ApiResponse<List<TemplateResponse>>> getAllTemplates(@RequestParam Long userId) {
         List<TemplateResponse> templateResponses = templateService.getTemplates(userId);
         ApiResponse<List<TemplateResponse>> apiResponse = ApiResponse.<List<TemplateResponse>>builder()
                 .code(2000)
@@ -57,7 +57,7 @@ public class TemplateController {
 
     // Cập nhật template
     @PutMapping("/{templateId}")
-    public ResponseEntity<ApiResponse<TemplateResponse>> updatePlan(@PathVariable Long templateId, @RequestBody TemplateRequest templateRequest) {
+    public ResponseEntity<ApiResponse<TemplateResponse>> updateTemplate(@PathVariable Long templateId, @RequestBody TemplateRequest templateRequest) {
         TemplateResponse templateResponses = templateService.updateTemplate(templateId, templateRequest);
         ApiResponse<TemplateResponse> response = ApiResponse.<TemplateResponse>builder()
                 .code(2000)
@@ -68,9 +68,9 @@ public class TemplateController {
     }
 
     // Xóa template
-    @DeleteMapping("/{id}")
-    public ResponseEntity<ApiResponse<Void>> deletePlan(@PathVariable Long id) {
-        templateService.deleteTemplate(id);
+    @DeleteMapping("/{templateId}")
+    public ResponseEntity<ApiResponse<Void>> deleteTemplate(@PathVariable Long templateId) {
+        templateService.deleteTemplate(templateId);
         ApiResponse<Void> response = ApiResponse.<Void>builder()
                 .code(2000)
                 .message("Delete template success")

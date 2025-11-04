@@ -1,5 +1,6 @@
 package com.example.sendflow.dto.response;
 
+import com.example.sendflow.enums.TemplateCategory;
 import com.example.sendflow.enums.TemplateType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -14,10 +15,11 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 public class TemplateResponse {
     private Long id;
-    private String templateName;
+    private String name;
     private String subject;
     private String body;
-    private TemplateType templateType;
+    private TemplateType type;
     private LocalDateTime createdAt;
+    private TemplateCategory category;
     private Integer usageCount;
 }

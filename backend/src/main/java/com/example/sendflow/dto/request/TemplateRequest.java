@@ -1,5 +1,6 @@
 package com.example.sendflow.dto.request;
 
+import com.example.sendflow.enums.TemplateCategory;
 import com.example.sendflow.enums.TemplateType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -11,8 +12,10 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class TemplateRequest {
-    private String templateName;
+    private Long userId;
+    private String name;
     private String subject;
     private String body;
-    private TemplateType templateType;
+    private TemplateType type;
+    private TemplateCategory category;
 }

@@ -35,6 +35,8 @@ public interface CampaignRepository extends JpaRepository<Campaign, Long> {
             """)
     List<CampaignResponse> findCampaignResponsesByUserId(Long userId);
 
+    @Query("SELECT COUNT(c) FROM Campaign c WHERE c.template.id = :templateId")
+    Integer countByTemplateId(Long templateId);
 }
 
 

@@ -10,7 +10,8 @@ import ContactList from "@/pages/clients/ContactList";
 import Campaign from "@/pages/clients/Campaign";
 import Plan from "@/pages/clients/Plan";
 import Template from "@/pages/clients/Template";
-import Contact from "@/pages/clients/ContactList/Contact"
+import TemplateDetail from "@/pages/clients/Template/TemplateDetail";
+import Contact from "@/pages/clients/ContactList/Contact";
 
 import DashBoardAdmin from "@/pages/admins/DashBoard";
 import PackageAdmin from "@/pages/admins/Package";
@@ -47,9 +48,10 @@ function App() {
           <Route path="/dashboard" element={<DashBoard />} />
           <Route path="/campaign" element={<Campaign />} />
           <Route path="/contact-list" element={<ContactList />} />
-           <Route path="/contact-list/:id" element={<Contact />} />
+          <Route path="/contact-list/:id" element={<Contact />} />
           <Route path="/plan" element={<Plan />} />
           <Route path="/template" element={<Template />} />
+          <Route path="/template/:id" element={<TemplateDetail />} />
 
           <Route path="/notification" element={<Notification />} />
         </Route>

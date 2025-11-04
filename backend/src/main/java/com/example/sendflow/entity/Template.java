@@ -1,5 +1,6 @@
 package com.example.sendflow.entity;
 
+import com.example.sendflow.enums.TemplateCategory;
 import com.example.sendflow.enums.TemplateType;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -26,6 +27,9 @@ public class Template {
 
     @Enumerated(EnumType.STRING)
     private TemplateType type=TemplateType.HTML;
+
+    @Enumerated(EnumType.STRING)
+    private TemplateCategory category=TemplateCategory.EMAIL;
 
     private String subject;
 
