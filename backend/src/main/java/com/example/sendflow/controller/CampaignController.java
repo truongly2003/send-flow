@@ -60,7 +60,7 @@ public class CampaignController {
     // Gửi mail
     @PostMapping("/{id}/send")
     public ResponseEntity<ApiResponse<String>> sendCampaign(@PathVariable Long id) {
-        campaignService.sendCampaign(id);
+        campaignService.sendCampaignMail(id);
         ApiResponse<String> apiResponse = ApiResponse.<String>builder()
                 .code(2000)
                 .message("Campaign sending started!")

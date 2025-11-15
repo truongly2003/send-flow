@@ -38,7 +38,7 @@ public class SendLog {
     private LocalDateTime sentAt;
 
     @Enumerated(EnumType.STRING)
-    private EventStatus status = EventStatus.SENT;
+    private EventStatus status = EventStatus.NEW;
 
     private int retryCount = 0;
     private LocalDateTime deliveredAt;  // Khi email được provider xác nhận là đã gửi thành công
@@ -47,6 +47,7 @@ public class SendLog {
     private LocalDateTime bouncedAt;    // Khi email bị trả lại (bounce)
     private LocalDateTime unsubscribedAt;
 
+    private String recipientEmail;
     @Lob
     @Column(columnDefinition = "TEXT")
     private String providerResponse;

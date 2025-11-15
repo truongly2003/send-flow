@@ -40,6 +40,17 @@ const campaignApi = {
     }
   },
 
+  // send campain mail
+  sendCampaignMail: async (campaignId)=>{
+    try {
+      const response=await httpRequest.post(`/campaign/${campaignId}/send`)
+      return response.data
+    } catch (error) {
+      console.error("Error send campaing mail:",error)
+      throw error;
+    }
+  }
+
 };
 
 export { campaignApi };

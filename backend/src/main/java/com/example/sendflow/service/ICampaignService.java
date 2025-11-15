@@ -15,5 +15,5 @@ public interface ICampaignService {
 
     void deleteCampaign(Long campaignId);
 
-    void sendCampaign(Long campaignId);
+    void sendCampaignMail(Long campaignId);
 }

@@ -186,16 +186,18 @@ public class DataLoader implements CommandLineRunner {
         Usage adminUsage = Usage.builder()
                 .subscription(adminSub)
                 .period("2025-10")
-                .setCount(150)
-                .recipient(800)
+                .contactCount(20)
+                .templateCount(1)
+                .emailCount(2)
                 .build();
         usageRepo.save(adminUsage);
 
         Usage userUsage = Usage.builder()
-                .subscription(userSub)
+                .subscription(adminSub)
                 .period("2025-10")
-                .setCount(150)
-                .recipient(800)
+                .contactCount(20)
+                .templateCount(1)
+                .emailCount(2)
                 .build();
         usageRepo.save(userUsage);
         System.out.println("Thêm 2 usages.");

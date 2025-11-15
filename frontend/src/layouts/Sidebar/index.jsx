@@ -14,6 +14,7 @@ import {
   UserCog,
   User,
   Bell,
+  Settings2
 } from "lucide-react";
 
 // Sidebar Component
@@ -28,6 +29,8 @@ function Sidebar({ role = "user", isOpen = false, onClose }) {
     { icon: FileText, label: "Mẫu tin", to: "/template" },
     { icon: Package, label: "Gói dịch vụ", to: "/plan" },
     { icon: Bell, label: "Thông báo (2)", to: "/notification" },
+    { icon: Settings2, label: "Cài đặt", to: "/setting" },
+
   ];
 
   // Menu items cho quản trị viên

@@ -1,4 +1,75 @@
 package com.example.sendflow.service.impl;
 
-public class PasswrodService {
+
+import com.example.sendflow.dto.request.UpdatePasswordRequest;
+import com.example.sendflow.entity.EmailVerification;
+import com.example.sendflow.entity.User;
+import com.example.sendflow.repository.EmailVerificationRepository;
+import com.example.sendflow.repository.UserRepository;
+import com.example.sendflow.service.IPasswordService;
+import com.example.sendflow.service.IVerifyEmail;
+import com.example.sendflow.util.OtpUtil;
+import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.stereotype.Service;
+
+import java.time.LocalDateTime;
+import java.util.Optional;
+
+@Service
+@RequiredArgsConstructor
+public class PasswordService implements IPasswordService {
+    private final UserRepository userRepository;
+    private final EmailVerificationRepository emailVerificationRepository;
+    private final IVerifyEmail verifyEmail;
+
+    private BCryptPasswordEncoder passwordEncoder;
+    // change password
+    @Override
+    public boolean changePassword(Long userId, UpdatePasswordRequest request) {
+        Optional<User> optionalUser = userRepository.findById(userId);
+        if (optionalUser.isEmpty()) {
+            return false;
+        }
+        User user = optionalUser.get();
+        if (!passwordEncoder.matches(request.getOldPassword(), user.getPassword())) {
+            return false;
+        }
+        String encodedNewPassword = passwordEncoder.encode(request.getNewPassword());
+        user.setPassword(encodedNewPassword);
+        userRepository.save(user);
+        return true;
+    }
+
+    // send otp forget-password
+    @Override
+    public boolean forgetPassword(String email) {
+       User user = userRepository.findByEmail(email);
+        if (user==null) {
+            return false;
+        }
+
+        String otp = OtpUtil.generateOtp();
+        EmailVerification verification = emailVerificationRepository
+                .findByEmail(email)
+                .orElse(new EmailVerification());
+        verification.setEmail(email);
+        verification.setOtp(otp);
+        verification.setExpiryDate(LocalDateTime.now().plusMinutes(5));
+        emailVerificationRepository.save(verification);
+        verifyEmail.sendPasswordResetEmail(user,otp);
+        return true;
+    }
+    // verify otp and reset password
+    @Override
+    public boolean resetPassword(String email, String newPassword, String otp) {
+        if(!verifyEmail.verifyResetOtp(email,otp)){
+            return false;
+        }
+        User user = userRepository.findByEmail(email);
+        user.setPassword(passwordEncoder.encode(newPassword));
+        userRepository.save(user);
+        emailVerificationRepository.deleteByEmail(email);
+        return false;
+    }
 }

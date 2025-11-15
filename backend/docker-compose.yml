@@ -1,7 +1,33 @@
 services:
+  app:
+    build: .
+    container_name: sendflow-app
+    ports:
+      - "8080:8080"
+    depends_on:
+      - mysql
+      - rabbitmq
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      # mysql
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/sendflow
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: root
+      # rabbitMQ
+      SPRING_RABBITMQ_HOST: rabbitmq
+      SPRING_RABBITMQ_PORT: 5672
+      SPRING_RABBITMQ_USERNAME: guest
+      SPRING_RABBITMQ_PASSWORD: guest
+      # mail
+      SPRING_MAIL_USERNAME: your_email@gmail.com
+      SPRING_MAIL_PASSWORD: your_app_password
+
+    networks:
+      - sendflow-net
+
   mysql:
     image: mysql:8.0
-    container_name: send-flow-mysql
+    container_name: sendflow-mysql
     environment:
       MYSQL_ROOT_PASSWORD: root
       MYSQL_DATABASE: sendflow
@@ -10,24 +36,29 @@ services:
     volumes:
       - mysql-data:/var/lib/mysql
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost" ]
       interval: 10s
       timeout: 5s
       retries: 5
+    networks:
+      - sendflow-net
 
-#  redis:
-#    image: redis:7-alpine
-#    container_name: email-redis
-#    ports:
-#      - "6379:6379"
-#    volumes:
-#      - redis-data:/data
-#    healthcheck:
-#      test: ["CMD", "redis-cli", "ping"]
-#      interval: 10s
-#      timeout: 5s
-#      retries: 5
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    restart: always
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    networks:
+      - sendflow-net
+
+networks:
+  sendflow-net:
+    driver: bridge
 
 volumes:
   mysql-data:
-#  redis-data:

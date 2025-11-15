@@ -1,4 +1,11 @@
 package com.example.sendflow.service;
 
-public class IAuthService {
+import com.example.sendflow.dto.request.AuthRequest;
+import com.example.sendflow.dto.response.AuthResponse;
+
+public interface IAuthService {
+    // login
+    AuthResponse login(AuthRequest authRequest);
+    // verify token
+    boolean authenticate(String token);
 }

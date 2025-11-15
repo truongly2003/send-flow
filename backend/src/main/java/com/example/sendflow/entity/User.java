@@ -22,8 +22,13 @@ public class User {
     private String name;
     private String email;
     private String password;
+    private String phone;
+    private String address;
+    private LocalDateTime lastLogin;
+    private boolean isActive=false;
     @Enumerated(EnumType.STRING)
     private Role role=Role.USER;
+
     private LocalDateTime updatedAt;
     private LocalDateTime createdAt;
 
@@ -49,4 +54,7 @@ public class User {
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Campaign> campaigns;
+
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
+    private SmtpConfig smtpConfig;
 }

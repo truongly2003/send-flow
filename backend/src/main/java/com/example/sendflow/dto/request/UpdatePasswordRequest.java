@@ -5,17 +5,11 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
-
 @Data
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class UserRequest {
-    private String name;
-    private String email;
-    private String password;
-    private String phone;
-    private String address;
-
+public class UpdatePasswordRequest {
+    private String oldPassword;
+    private String newPassword;
 }

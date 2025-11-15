@@ -11,7 +11,7 @@ import Campaign from "@/pages/clients/Campaign";
 import CampaignDetail from "@/pages/clients/Campaign/CampaignDetail";
 import SendLog from "@/pages/clients/Campaign/SendLog";
 // import SendLog from "../src/pages/clients/Campaign/SendLog.jsx"
-
+import Settings from "@pages/Settings"
 import Plan from "@/pages/clients/Plan";
 import Template from "@/pages/clients/Template";
 import TemplateDetail from "@/pages/clients/Template/TemplateDetail";
@@ -60,6 +60,8 @@ function App() {
           <Route path="/template/:id" element={<TemplateDetail />} />
 
           <Route path="/notification" element={<Notification />} />
+          <Route path="/setting" element={<Settings />} />
+
         </Route>
       </Routes>
     </BrowserRouter>

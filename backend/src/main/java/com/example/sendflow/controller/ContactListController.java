@@ -1,10 +1,8 @@
 package com.example.sendflow.controller;
 
 import com.example.sendflow.dto.request.ContactListRequest;
-import com.example.sendflow.dto.request.ContactRequest;
 import com.example.sendflow.dto.response.ApiResponse;
 import com.example.sendflow.dto.response.ContactListResponse;
-import com.example.sendflow.dto.response.ContactResponse;
 import com.example.sendflow.service.IContactListService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;

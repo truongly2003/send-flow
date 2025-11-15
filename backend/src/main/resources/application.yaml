@@ -1,14 +1,18 @@
 server:
+  port: 8080
   servlet:
     context-path: /send-flow/api
+
 spring:
   application:
-    name: send flow
+    name: send-flow
+
   datasource:
     url: jdbc:mysql://localhost:3306/sendflow
     driverClassName: com.mysql.cj.jdbc.Driver
     username: root
     password: root
+
   jpa:
     hibernate:
       ddl-auto: update
@@ -16,6 +20,26 @@ spring:
     properties:
       hibernate:
         dialect: org.hibernate.dialect.MySQL8Dialect
+
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: guest
+    password: guest
+
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ${EMAIL_USERNAME}
+    password: ${EMAIL_PASSWORD}
+    protocol: smtp
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
 jwt:
   secret: ${SECRET}
   access-token-expiration: 10000000

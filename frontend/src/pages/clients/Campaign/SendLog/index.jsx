@@ -202,7 +202,7 @@ const SendLog = () => {
             </table>
           </div>
           <div className="p-4 border-t border-gray-800 flex items-center justify-between">
-            <div className="flex justify-between items-center mt-6">
+            <div className="flex justify-between items-center mt-6 space-x-2">
               <button
                 disabled={page === 0}
                 onClick={() => setPage(page - 1)}

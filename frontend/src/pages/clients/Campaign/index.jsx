@@ -201,6 +201,46 @@ function Campaign() {
   const handleViewDetail = (campaign) => {
     navigate(`/campaign/${campaign.id}`, { state: { campaign } });
   };
+  // handle send campaing mail
+  const handleSendCampaignMail = async (id) => {
+    try {
+      // 1️⃣ Cập nhật UI ngay khi bắt đầu gửi
+      setCampaigns((prevCampaigns) =>
+        prevCampaigns.map((campaign) =>
+          campaign.id === id ? { ...campaign, status: "SENDING" } : campaign
+        )
+      );
+
+      // 2️⃣ Gọi API gửi mail
+      const response = await campaignApi.sendCampaignMail(id);
+
+      // 3️⃣ Xử lý kết quả trả về
+      if (response.code === 2000) {
+        // Gửi thành công
+        setCampaigns((prevCampaigns) =>
+          prevCampaigns.map((campaign) =>
+            campaign.id === id ? { ...campaign, status: "COMPLETED" } : campaign
+          )
+        );
+      } else {
+        // Gửi thất bại (có thể lỗi một phần)
+        setCampaigns((prevCampaigns) =>
+          prevCampaigns.map((campaign) =>
+            campaign.id === id ? { ...campaign, status: "FAILED" } : campaign
+          )
+        );
+      }
+    } catch (error) {
+      // 4️⃣ Lỗi trong quá trình gọi API
+      setCampaigns((prevCampaigns) =>
+        prevCampaigns.map((campaign) =>
+          campaign.id === id ? { ...campaign, status: "FAILED" } : campaign
+        )
+      );
+
+      alert("Error: " + error);
+    }
+  };
 
   // -------------------- FILTER --------------------
   const filteredCampaigns = campaigns.filter((campaign) => {
@@ -211,10 +251,8 @@ function Campaign() {
       .includes(searchQuery.toLowerCase());
     return matchesStatus && matchesSearch;
   });
-  
-  const handleSend = () => {
-    alert("xin chào hahahahah");
-  };
+
+ 
   // -------------------- UI --------------------
   if (loading) {
     return <LoadingSpinner message="Đang tải chiến dịch..." />;
@@ -333,7 +371,7 @@ function Campaign() {
                     <Trash2 size={16} sm:size={18} />
                   </button>
                   <button
-                    onClick={() => handleSend()}
+                    onClick={() => handleSendCampaignMail(campaign.id)}
                     className="px-2 sm:px-3 py-2 bg-green-500 hover:bg-green-700 rounded-lg flex items-center gap-2"
                     title="Gửi"
                   >
