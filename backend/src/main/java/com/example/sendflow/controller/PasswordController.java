@@ -44,7 +44,7 @@ public class PasswordController {
         return reset ? ResponseEntity.ok("Reset password successfully") : ResponseEntity.badRequest().body("Reset password failed");
     }
 
-    // check otp
+    // check otp test
     @PostMapping("/verify-check-otp")
     public ResponseEntity<?> verifyCheckOtp(@RequestParam String otp) {
         return ResponseEntity.ok("Verify OTP successfully");

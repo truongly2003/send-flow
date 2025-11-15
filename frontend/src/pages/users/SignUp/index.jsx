@@ -1,41 +1,39 @@
-// import LoadingModal from "@/components/LoadingModal";
-// import useNotification from "@/context/useNotification";
-// import { registerUser } from "@/services/UserService";
-import { Mail, Facebook,  } from "lucide-react";
-
+import { Mail, Facebook, User2 } from "lucide-react";
+import { userApi } from "@/services/UserApi";
 import GppMaybeIcon from "@mui/icons-material/GppMaybe";
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Google } from "@mui/icons-material";
-
+import LoadingModal from "@/components/LoadingModal";
 function SignUp() {
-  // const { notify } = useNotification();
   const navigate = useNavigate();
-
-  // State to track the form data
   const [formData, setFormData] = useState({
     email: "",
+    name: "",
     password: "12345",
     confirmPassword: "12345",
   });
 
   const [isProcessing, setIsProcessing] = useState(false);
-
   const handleSubmit = async () => {
-    // if (formData.password !== formData.confirmPassword) {
-    //   notify("Re-enter incorrect password", "error");
-    //   return;
-    // }
-    // setIsProcessing(true);
-    // try {
-    //   const res = await registerUser(formData.email, formData.password);
-    //   notify(res.message, res.code === 200 ? "success" : "error");
-    //   navigate("/check-email");
-    // } catch (err) {
-    //   console.error(err);
-    // } finally {
-    //   setIsProcessing(false);
-    // }
+    if (!formData.email || !formData.password || !formData.name) {
+      alert("Please enter complete information!");
+      return;
+    }
+    if (formData.password !== formData.confirmPassword) {
+      alert("Incorrect password re-entered!");
+      return;
+    }
+    setIsProcessing(true);
+    try {
+      const res = await userApi.register(formData);
+      console.log(res);
+      navigate("/verify-otp", { state: { formData } });
+    } catch (err) {
+      console.error(err);
+    }finally{
+      setIsProcessing(false);
+    }
   };
 
   // Function to handle input change
@@ -46,12 +44,14 @@ function SignUp() {
   return (
     <div className="flex text-white h-screen items-center justify-center bg-gray-900">
       <div className="w-full max-w-md  border-gray-700 bg-gray-800  border p-6 rounded-lg shadow-md">
-        <h2 className="text-white text-center text-2xl font-semibold mb-4">Đăng ký</h2>
+        <h2 className="text-white text-center text-2xl font-semibold mb-4">
+          Đăng ký
+        </h2>
 
         <div className="">
           <div className="mb-3">
             <div className="flex items-center border bg-gray-700 border-white rounded p-2 ">
-               <Mail className="text-white" size={20} />
+              <Mail className="text-white" size={20} />
               <input
                 name="email"
                 type="email"
@@ -59,6 +59,20 @@ function SignUp() {
                 placeholder="Email"
                 required
                 value={formData.email}
+                onChange={handleChange}
+              />
+            </div>
+          </div>
+          <div className="mb-3">
+            <div className="flex items-center border bg-gray-700 border-white rounded p-2 ">
+              <User2 className="text-white" size={20} />
+              <input
+                name="name"
+                type="name"
+                className="ml-2 w-full outline-none bg-transparent text-white "
+                placeholder="name"
+                required
+                value={formData.name}
                 onChange={handleChange}
               />
             </div>
@@ -134,7 +148,7 @@ function SignUp() {
         </div>
       </div>
 
-      {/* <LoadingModal isProcessing={isProcessing} /> */}
+      <LoadingModal isProcessing={isProcessing} />
     </div>
   );
 }

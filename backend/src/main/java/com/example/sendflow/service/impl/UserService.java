@@ -5,6 +5,7 @@ import com.example.sendflow.dto.response.UserResponse;
 import com.example.sendflow.entity.EmailVerification;
 import com.example.sendflow.entity.Subscription;
 import com.example.sendflow.entity.User;
+import com.example.sendflow.enums.Role;
 import com.example.sendflow.exception.ResourceNotFoundException;
 import com.example.sendflow.mapper.UserMapper;
 import com.example.sendflow.repository.EmailVerificationRepository;
@@ -14,6 +15,7 @@ import com.example.sendflow.service.IUserService;
 import com.example.sendflow.service.IVerifyEmail;
 import com.example.sendflow.util.OtpUtil;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -29,6 +31,7 @@ public class UserService implements IUserService {
     private final EmailVerificationRepository emailVerificationRepository;
     private final IVerifyEmail verifyEmail;
     private final UserMapper userMapper;
+    @Autowired
     private BCryptPasswordEncoder bCryptPasswordEncoder;
 
     @Override
@@ -38,6 +41,7 @@ public class UserService implements IUserService {
         }
         User user = userMapper.toUser(userRequest);
         user.setPassword(bCryptPasswordEncoder.encode(userRequest.getPassword()));
+        user.setRole(Role.USER);
         userRepository.save(user);
 
         String otp= OtpUtil.generateOtp();
@@ -72,7 +76,8 @@ public class UserService implements IUserService {
                 .lastLogin(user.getLastLogin())
                 .totalCampaign(totalCampaign)
                 .totalEmailSend(totalMail)
-                .status(lastSubscription.getStatus())
+                .isActive(user.isActive())
+                .subscriptionStatus(lastSubscription.getStatus())
                 .subscription(lastSubscription.getPlan().getName())
                 .createdAt(lastSubscription.getCreatedAt())
                 .build();
@@ -114,7 +119,8 @@ public class UserService implements IUserService {
                             .lastLogin(user.getLastLogin())
                             .totalCampaign(totalCampaign)
                             .totalEmailSend(totalMail)
-                            .status(lastSubscription != null ? lastSubscription.getStatus() : null)
+                            .isActive(user.isActive())
+                            .subscriptionStatus(lastSubscription != null ? lastSubscription.getStatus() : null)
                             .subscription(lastSubscription != null ? lastSubscription.getPlan().getName() : null)
                             .createdAt(lastSubscription != null ? lastSubscription.getCreatedAt() : null)
                             .build();

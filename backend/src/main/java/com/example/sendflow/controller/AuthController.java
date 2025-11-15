@@ -3,7 +3,6 @@ package com.example.sendflow.controller;
 import com.example.sendflow.dto.request.AuthRequest;
 import com.example.sendflow.dto.response.ApiResponse;
 import com.example.sendflow.dto.response.AuthResponse;
-import com.example.sendflow.dto.response.UserResponse;
 import com.example.sendflow.service.IAuthService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -15,7 +14,7 @@ import org.springframework.web.bind.annotation.*;
 public class AuthController {
     private final IAuthService authService;
     // login
-    @PostMapping()
+    @PostMapping("/login")
     public ResponseEntity<ApiResponse<AuthResponse>> login(@RequestBody AuthRequest authRequest) {
         AuthResponse authResponse = authService.login(authRequest);
         ApiResponse<AuthResponse> apiResponse=ApiResponse.<AuthResponse>builder()

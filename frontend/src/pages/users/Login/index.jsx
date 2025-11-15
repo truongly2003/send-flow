@@ -1,23 +1,10 @@
-import {
-  Mail,
-  Lock,
-  Chrome,
-  Facebook,
-  Twitter,
-  Linkedin,
-} from "lucide-react";
+import { Mail, Lock } from "lucide-react";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
-// import { loginWithEmail } from "@/services/AuthService";
-// import useAuth from "@/context/useAuth";
-// import useNotification from "@/context/useNotification";
-
-import axios from "axios";
+import { userApi } from "@/services/UserApi";
 
 function Login() {
-//   const { login } = useAuth();
-//   const { notify } = useNotification();
   const [data, setData] = useState({
     email: "",
     password: "",
@@ -27,50 +14,28 @@ function Login() {
   const handleChange = (e) => {
     setData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
-  
+
   const handleLogin = async () => {
-    // try {
-    //   const response = await loginWithEmail(data);
-    //   if (response.status) {
-        // notify("Login successfully! 🎉", "success");
-        // // login(response.accessToken);
-        // localStorage.setItem("accessToken", response.accessToken);
-        // localStorage.setItem("refreshToken", response.refreshToken);
-        // localStorage.setItem("userId", response.userId);
-        // localStorage.setItem("userName", response.userName);
-
-        navigate("/dashboard");
-    //   } else {
-        // notify("Incorrect email or password 🎉", "error");
-    //     navigate("/login");
-    //   }
-    // } catch (error) {
-    //   console.log(error);
-    // }
-  };
-  
-  const handleLoginWithGoogle = async () => {
-    try {
-      const response = await axios.get(
-        "http://localhost:8080/api/oauth/google"
-      );
-
-      window.location.href = response.data.authUrl;
-    } catch (error) {
-      console.error("Lỗi khi gọi backend để đăng nhập với Google", error);
+    if (!data.email || !data.password) {
+      alert("Please enter complete information!");
+      return;
     }
-  };
-  
-  const handleLoginWithFacebook = async () => {
     try {
-      const response = await axios.get(
-        "http://localhost:8080/api/oauth/facebook"
-      );
-
-      const { authUrl } = response.data;
-      window.location.href = authUrl;
+      const response = await userApi.login(data);
+      console.log("RESPONSE:", response);
+      console.log("Xin chào");
+      if (response.code === 2000) {
+        const user = response.data;
+        alert(response.message);
+        localStorage.setItem("user", JSON.stringify(user));
+        if (user.role === "ADMIN") navigate("/admin/dashboard");
+        if (user.role === "USER") navigate("/dashboard");
+      } else {
+        alert(response.message);
+        navigate("/login");
+      }
     } catch (error) {
-      console.error("Lỗi khi gọi backend để đăng nhập với Facebook", error);
+      console.log(error);
     }
   };
 
@@ -110,8 +75,8 @@ function Login() {
           </div>
           <div className="flex justify-between text-sm text-gray-300">
             <label>
-              <input type="checkbox" className="mr-2 accent-purple-500" /> Nhớ Mật
-              khẩu
+              <input type="checkbox" className="mr-2 accent-purple-500" /> Nhớ
+              Mật khẩu
             </label>
             <Link to="/forgot-password" className="text-white hover:underline">
               Quên mật khẩu
@@ -130,26 +95,6 @@ function Login() {
               <hr className="flex-grow border-gray-600" />
               <span className="px-3 text-gray-400">Hoặc đăng nhập với</span>
               <hr className="flex-grow border-gray-600" />
-            </div>
-            <div className="flex justify-center gap-3 mt-2">
-              <button
-                className="p-2 bg-gray-700 border border-gray-600 rounded hover:bg-gray-600 transition-colors"
-                onClick={handleLoginWithGoogle}
-              >
-                <Chrome className="text-white" size={20} />
-              </button>
-              <button
-                className="p-2 bg-gray-700 border border-gray-600 rounded hover:bg-gray-600 transition-colors"
-                onClick={handleLoginWithFacebook}
-              >
-                <Facebook className="text-white" size={20} />
-              </button>
-              <button className="p-2 bg-gray-700 border border-gray-600 rounded hover:bg-gray-600 transition-colors">
-                <Twitter className="text-white" size={20} />
-              </button>
-              <button className="p-2 bg-gray-700 border border-gray-600 rounded hover:bg-gray-600 transition-colors">
-                <Linkedin className="text-white" size={20} />
-              </button>
             </div>
           </div>
 

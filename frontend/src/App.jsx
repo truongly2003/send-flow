@@ -4,6 +4,7 @@ import HomeLayout from "@/layouts/HomeLayout";
 import Home from "./pages/Home";
 import Login from "@/pages/users/Login";
 import SignUp from "@/pages/users/SignUp";
+import Otp from "@/pages/users/Otp";
 
 import DashBoard from "@/pages/clients/DashBoard";
 import ContactList from "@/pages/clients/ContactList";
@@ -39,6 +40,8 @@ function App() {
         {/* login */}
         <Route path="/login" element={<Login />} />
         <Route path="/sign-up" element={<SignUp />} />
+        <Route path="/verify-otp" element={<Otp />} />
+
         {/*  */}
         <Route element={<DefaultLayout />}>
           {/* admin */}

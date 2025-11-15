@@ -34,7 +34,7 @@ public class UserController {
     @PostMapping("/verify-otp")
     public ResponseEntity<ApiResponse<Boolean>> verifyOtp(@RequestParam String email,
                                                           @RequestParam String otp) {
-        boolean verify=verifyEmail.verifyResetOtp(email,otp);
+        boolean verify=verifyEmail.verifyOtp(email,otp);
         if (verify) {
             ApiResponse<Boolean> response = ApiResponse.<Boolean>builder()
                     .code(2000)

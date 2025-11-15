@@ -21,7 +21,8 @@ public class UserResponse {
     private String address;
     private Role role;
     private String subscription;
-    private SubscriptionStatus status;
+    private SubscriptionStatus subscriptionStatus;
+    private boolean isActive;
     private Long totalCampaign;
     private Long totalEmailSend;
     private LocalDateTime createdAt;
