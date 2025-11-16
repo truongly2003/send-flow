@@ -22,8 +22,6 @@ function Login() {
     }
     try {
       const response = await userApi.login(data);
-      console.log("RESPONSE:", response);
-      console.log("Xin chào");
       if (response.code === 2000) {
         const user = response.data;
         alert(response.message);

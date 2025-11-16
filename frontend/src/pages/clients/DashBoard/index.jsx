@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Mail,
   Send,
@@ -12,16 +12,28 @@ import {
   BarChart3,
   ArrowUpRight,
 } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+import { subscriptionApi } from "@services/SubscriptionApi";
+import { formatVNDate } from "@configs/formatVNDate";
 
 function Dashboard() {
-  // Sample data - thay bằng API calls thực tế từ backend
+  const { userId } = useAuth();
+  const [currentSubscription, setCurrentSubscription] = useState(null);
+
+  const fetchCurrentSubscription = async () => {
+    try {
+      const response = await subscriptionApi.getSubscriptionByUserId(userId);
+      setCurrentSubscription(response.data);
+    } catch (err) {
+      console.log(err);
+    }
+  };
+  useEffect(() => {
+    if (!userId) return;
+    fetchCurrentSubscription();
+  }, [userId]);
+
   const [dashboardData] = useState({
-    subscription: {
-      packageName: "Professional",
-      expiryDate: "2025-12-31",
-      daysRemaining: 62,
-      status: "active", // active, expiring, expired
-    },
     quota: {
       total: 10000,
       used: 6450,
@@ -35,20 +47,36 @@ function Dashboard() {
       successRate: 94.2,
     },
     recentCampaigns: [
-      { id: 1, name: "Summer Sale 2025", sent: 1200, rate: 95.5, date: "2025-10-28" },
-      { id: 2, name: "Product Launch", sent: 850, rate: 92.3, date: "2025-10-25" },
-      { id: 3, name: "Newsletter Oct", sent: 980, rate: 96.1, date: "2025-10-20" },
+      {
+        id: 1,
+        name: "Summer Sale 2025",
+        sent: 1200,
+        rate: 95.5,
+        date: "2025-10-28",
+      },
+      {
+        id: 2,
+        name: "Product Launch",
+        sent: 850,
+        rate: 92.3,
+        date: "2025-10-25",
+      },
+      {
+        id: 3,
+        name: "Newsletter Oct",
+        sent: 980,
+        rate: 96.1,
+        date: "2025-10-20",
+      },
     ],
   });
 
   const getStatusColor = (status) => {
     switch (status) {
-      case "active":
+      case "ACTIVE":
         return "text-green-400 bg-green-400/10";
-      case "expiring":
+      case "EXPIRED":
         return "text-yellow-400 bg-yellow-400/10";
-      case "expired":
-        return "text-red-400 bg-red-400/10";
       default:
         return "text-gray-400 bg-gray-400/10";
     }
@@ -66,7 +94,9 @@ function Dashboard() {
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold mb-2">Dashboard</h1>
-          <p className="text-gray-400">Tổng quan hoạt động email marketing của bạn</p>
+          <p className="text-gray-400">
+            Tổng quan hoạt động email marketing của bạn
+          </p>
         </div>
 
         {/* Subscription Status Card */}
@@ -77,20 +107,38 @@ function Dashboard() {
                 <Package className="text-blue-400" size={24} />
                 <h2 className="text-xl font-semibold">Gói dịch vụ hiện tại</h2>
               </div>
-              <p className="text-2xl font-bold text-blue-400">{dashboardData.subscription.packageName}</p>
+              <p className="text-2xl font-bold text-blue-400">
+                {currentSubscription?.planName}
+              </p>
             </div>
-            <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(dashboardData.subscription.status)}`}>
-              {dashboardData.subscription.status === "active" ? "Đang hoạt động" : "Hết hạn"}
+            <span
+              className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(
+                currentSubscription?.status
+              )}`}
+            >
+              {currentSubscription?.status === "ACTIVE"
+                ? "Đang hoạt động"
+                : "Hết hạn"}
             </span>
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div className="flex items-center gap-2 text-gray-300">
               <Calendar size={18} />
-              <span className="text-sm">Hết hạn: {dashboardData.subscription.expiryDate}</span>
+              <span className="text-sm">
+                Hết hạn: {formatVNDate(currentSubscription?.endTime)}
+              </span>
             </div>
             <div className="flex items-center gap-2 text-gray-300">
               <Clock size={18} />
-              <span className="text-sm">Còn {dashboardData.subscription.daysRemaining} ngày</span>
+              <span className="text-sm">
+                Còn{" "}
+                {Math.ceil(
+                  (new Date(currentSubscription?.endTime) -
+                    new Date(currentSubscription?.startTime)) /
+                    (1000 * 60 * 60 * 24)
+                )}{" "}
+                ngày
+              </span>
             </div>
           </div>
         </div>
@@ -108,17 +156,23 @@ function Dashboard() {
           </div>
           <div className="space-y-2">
             <div className="flex justify-between text-sm text-gray-400">
-              <span>Đã sử dụng: {dashboardData.quota.used.toLocaleString()}</span>
+              <span>
+                Đã sử dụng: {dashboardData.quota.used.toLocaleString()}
+              </span>
               <span>Tổng: {dashboardData.quota.total.toLocaleString()}</span>
             </div>
             <div className="w-full bg-gray-800 rounded-full h-3 overflow-hidden">
               <div
-                className={`h-full ${getQuotaColor(dashboardData.quota.percentage)} transition-all duration-500`}
+                className={`h-full ${getQuotaColor(
+                  dashboardData.quota.percentage
+                )} transition-all duration-500`}
                 style={{ width: `${dashboardData.quota.percentage}%` }}
               />
             </div>
             {dashboardData.quota.percentage >= 80 && (
-              <p className="text-xs text-yellow-400">⚠️ Hạn mức sắp hết, vui lòng nâng cấp gói dịch vụ</p>
+              <p className="text-xs text-yellow-400">
+                ⚠️ Hạn mức sắp hết, vui lòng nâng cấp gói dịch vụ
+              </p>
             )}
           </div>
         </div>
@@ -132,9 +186,12 @@ function Dashboard() {
               </div>
               <span className="font-semibold">Tạo chiến dịch mới</span>
             </div>
-            <ArrowUpRight className="group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" size={20} />
+            <ArrowUpRight
+              className="group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform"
+              size={20}
+            />
           </button>
-          
+
           <button className="bg-gray-800 hover:bg-gray-700 transition-colors rounded-xl p-4 flex items-center justify-between group border border-gray-700">
             <div className="flex items-center gap-3">
               <div className="bg-green-500/20 p-2 rounded-lg">
@@ -142,9 +199,12 @@ function Dashboard() {
               </div>
               <span className="font-semibold">Thêm liên hệ</span>
             </div>
-            <ArrowUpRight className="group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" size={20} />
+            <ArrowUpRight
+              className="group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform"
+              size={20}
+            />
           </button>
-          
+
           <button className="bg-gray-800 hover:bg-gray-700 transition-colors rounded-xl p-4 flex items-center justify-between group border border-gray-700">
             <div className="flex items-center gap-3">
               <div className="bg-purple-500/20 p-2 rounded-lg">
@@ -152,7 +212,10 @@ function Dashboard() {
               </div>
               <span className="font-semibold">Xem báo cáo</span>
             </div>
-            <ArrowUpRight className="group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" size={20} />
+            <ArrowUpRight
+              className="group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform"
+              size={20}
+            />
           </button>
         </div>
 
@@ -166,7 +229,9 @@ function Dashboard() {
               <TrendingUp className="text-green-400" size={18} />
             </div>
             <p className="text-gray-400 text-sm mb-1">Tổng email đã gửi</p>
-            <p className="text-3xl font-bold">{dashboardData.stats.totalEmailsSent.toLocaleString()}</p>
+            <p className="text-3xl font-bold">
+              {dashboardData.stats.totalEmailsSent.toLocaleString()}
+            </p>
           </div>
 
           <div className="bg-gray-900 border border-gray-800 rounded-xl p-5">
@@ -177,7 +242,9 @@ function Dashboard() {
               <TrendingUp className="text-green-400" size={18} />
             </div>
             <p className="text-gray-400 text-sm mb-1">Tổng chiến dịch</p>
-            <p className="text-3xl font-bold">{dashboardData.stats.totalCampaigns}</p>
+            <p className="text-3xl font-bold">
+              {dashboardData.stats.totalCampaigns}
+            </p>
           </div>
 
           <div className="bg-gray-900 border border-gray-800 rounded-xl p-5">
@@ -188,7 +255,9 @@ function Dashboard() {
               <TrendingUp className="text-green-400" size={18} />
             </div>
             <p className="text-gray-400 text-sm mb-1">Tổng liên hệ</p>
-            <p className="text-3xl font-bold">{dashboardData.stats.totalContacts.toLocaleString()}</p>
+            <p className="text-3xl font-bold">
+              {dashboardData.stats.totalContacts.toLocaleString()}
+            </p>
           </div>
 
           <div className="bg-gray-900 border border-gray-800 rounded-xl p-5">
@@ -199,7 +268,9 @@ function Dashboard() {
               <TrendingUp className="text-green-400" size={18} />
             </div>
             <p className="text-gray-400 text-sm mb-1">Tỷ lệ thành công</p>
-            <p className="text-3xl font-bold">{dashboardData.stats.successRate}%</p>
+            <p className="text-3xl font-bold">
+              {dashboardData.stats.successRate}%
+            </p>
           </div>
         </div>
 
@@ -224,11 +295,15 @@ function Dashboard() {
                 <div className="flex items-center gap-6 text-sm">
                   <div className="text-right">
                     <p className="text-gray-400">Đã gửi</p>
-                    <p className="font-semibold">{campaign.sent.toLocaleString()}</p>
+                    <p className="font-semibold">
+                      {campaign.sent.toLocaleString()}
+                    </p>
                   </div>
                   <div className="text-right">
                     <p className="text-gray-400">Tỷ lệ</p>
-                    <p className="font-semibold text-green-400">{campaign.rate}%</p>
+                    <p className="font-semibold text-green-400">
+                      {campaign.rate}%
+                    </p>
                   </div>
                 </div>
               </div>

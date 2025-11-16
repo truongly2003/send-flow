@@ -16,17 +16,18 @@ import { templateApi } from "@services/TemplateApi";
 import { LoadingSpinner } from "@components/LoadingSpinner";
 import { ErrorDisplay } from "@components/ErrorDisplay";
 import { formatVNDate } from "@configs/formatVNDate";
+import { useAuth } from "@/contexts/AuthContext";
 
 import { useNavigate } from "react-router-dom";
 
 function Template() {
+  const {userId}=useAuth()
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
   const [modalOpen, setModalOpen] = useState(false);
   const [templates, setTemplates] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const userId = 1;
 
   const fetchTemplates = async () => {
     try {

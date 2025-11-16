@@ -24,7 +24,7 @@ function Contact() {
   const [searchQuery, setSearchQuery] = useState("");
 
   const [page, setPage] = useState(0);
-  const size =10;
+  const size = 10;
   const [totalPages, setTotalPages] = useState(0);
 
   const [contacts, setContacts] = useState([]);
@@ -200,21 +200,21 @@ function Contact() {
               <Users className="text-blue-400" size={20} />
               <span className="text-sm text-gray-400">Tổng liên hệ</span>
             </div>
-            <p className="text-3xl font-bold">{list.totalContacts}</p>
+            <p className="text-3xl font-bold">{contacts?.length}</p>
           </div>
           <div className="bg-gray-900 border border-gray-800 rounded-xl p-5">
             <div className="flex items-center gap-2 mb-2">
               <Mail className="text-green-400" size={20} />
               <span className="text-sm text-gray-400">Email hợp lệ</span>
             </div>
-            <p className="text-3xl font-bold">{list.totalContacts}</p>
+            <p className="text-3xl font-bold">{contacts?.length}</p>
           </div>
           <div className="bg-gray-900 border border-gray-800 rounded-xl p-5">
             <div className="flex items-center gap-2 mb-2">
               <Phone className="text-purple-400" size={20} />
               <span className="text-sm text-gray-400">SĐT hợp lệ</span>
             </div>
-            <p className="text-3xl font-bold">{list.totalContacts}</p>
+            <p className="text-3xl font-bold">{contacts?.length}</p>
           </div>
         </div>
 

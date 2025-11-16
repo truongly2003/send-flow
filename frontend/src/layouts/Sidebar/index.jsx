@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import PropTypes from "prop-types";
 import { useNavigate } from "react-router-dom";
 import {
@@ -14,13 +14,19 @@ import {
   UserCog,
   User,
   Bell,
-  Settings2
+  Settings2,
 } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
 
 // Sidebar Component
-function Sidebar({ role = "user", isOpen = false, onClose }) {
+function Sidebar({  isOpen = false, onClose }) {
   const [activeItem, setActiveItem] = useState("Thống kê");
   const navigate = useNavigate();
+  const {user,logout} = useAuth();
+  const role = user?.role?.toLowerCase();
+  useEffect(()=>{
+    setActiveItem(location.pathname)
+  },[location.pathname])
   // Menu items cho người dùng
   const userMenuItems = [
     { icon: Home, label: "Thống kê", to: "/dashboard" },
@@ -30,7 +36,6 @@ function Sidebar({ role = "user", isOpen = false, onClose }) {
     { icon: Package, label: "Gói dịch vụ", to: "/plan" },
     { icon: Bell, label: "Thông báo (2)", to: "/notification" },
     { icon: Settings2, label: "Cài đặt", to: "/setting" },
-
   ];
 
   // Menu items cho quản trị viên
@@ -102,12 +107,12 @@ function Sidebar({ role = "user", isOpen = false, onClose }) {
             <User size={20} className="text-gray-300" />
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium text-white truncate">Truong</p>
-            <p className="text-xs text-gray-400 truncate">Email</p>
+            <p className="text-sm font-medium text-white truncate">{user.name}</p>
+            <p className="text-xs text-gray-400 truncate">Email: {user.email}</p>
           </div>
         </div>
         <button
-          onClick={() => console.log("Logout clicked")}
+          onClick={logout}
           className="w-full flex items-center gap-4 px-6 py-4 hover:bg-gray-800 transition-colors text-red-400"
         >
           <LogOut size={20} />
@@ -119,7 +124,6 @@ function Sidebar({ role = "user", isOpen = false, onClose }) {
 }
 export default Sidebar;
 Sidebar.propTypes = {
-  role: PropTypes.oneOf(["user", "admin"]),
   isOpen: PropTypes.bool,
   onClose: PropTypes.func,
 };

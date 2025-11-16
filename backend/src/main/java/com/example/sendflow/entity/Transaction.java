@@ -35,6 +35,7 @@ public class Transaction {
     @Enumerated(EnumType.STRING)
     private PaymentStatus paymentStatus=PaymentStatus.PENDING;
 
+    private String description;
     private LocalDateTime updatedAt;
     private LocalDateTime createdAt;
 

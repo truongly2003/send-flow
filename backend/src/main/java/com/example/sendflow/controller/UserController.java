@@ -19,7 +19,7 @@ public class UserController {
     private final IUserService userService;
     private  final IVerifyEmail verifyEmail;
     // register
-    @PostMapping()
+    @PostMapping("/register")
     public ResponseEntity<ApiResponse<Boolean>> addUser(@RequestBody UserRequest userRequest) {
         // create user, create otp, send email
         Boolean addUser=userService.createUser(userRequest);

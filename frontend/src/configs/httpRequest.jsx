@@ -1,8 +1,9 @@
 import axios from "axios";
+import { useAuth } from "@/hooks/useAuth";
 const httpRequest = axios.create({
   baseURL: "http://localhost:8080/send-flow/api",
   headers: {
-    'Content-Type': 'application/json',
+    "Content-Type": "application/json",
   },
 });
 
@@ -18,11 +19,12 @@ const addRefreshSubscriber = (callback) => {
 };
 
 httpRequest.interceptors.request.use((config) => {
-  const token = localStorage.getItem("accessToken");
+  const currentUser = useAuth();
+  const token = currentUser?.accessToken
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
-  return config
+  return config;
 });
 
 httpRequest.interceptors.response.use(
@@ -83,7 +85,6 @@ httpRequest.interceptors.response.use(
 );
 
 export default httpRequest;
-
 
 // Ví dụ minh họa thời gian
 // Thời gian	Sự kiện	isRefreshing	refreshSubscribers

@@ -3,6 +3,7 @@ package com.example.sendflow.controller;
 import com.example.sendflow.dto.request.ContactRequest;
 import com.example.sendflow.dto.response.ApiResponse;
 import com.example.sendflow.dto.response.ContactResponse;
+import com.example.sendflow.dto.response.PagedResponse;
 import com.example.sendflow.service.IContactService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -22,13 +23,12 @@ public class ContactController {
 
     // Lấy tất cả liên hệ
     @GetMapping("/list/{listContactId}")
-    public ResponseEntity<ApiResponse<Page<ContactResponse>>> getAllContacts(
+    public ResponseEntity<ApiResponse<PagedResponse<ContactResponse>>> getAllContacts(
             @PathVariable Long listContactId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
-        Pageable pageable = PageRequest.of(page, size);
-        Page<ContactResponse> contactResponses = contactService.getAllContacts(listContactId,pageable);
-        ApiResponse<Page<ContactResponse>> apiResponse = ApiResponse.<Page<ContactResponse>>builder()
+        PagedResponse<ContactResponse> contactResponses = contactService.getAllContacts(listContactId,page,size);
+        ApiResponse<PagedResponse<ContactResponse>> apiResponse = ApiResponse.<PagedResponse<ContactResponse>>builder()
                 .code(2000)
                 .message("success")
                 .data(contactResponses)
