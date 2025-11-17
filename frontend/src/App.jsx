@@ -27,11 +27,12 @@ import SendLogAdmin from "@/pages/admins/SendLog";
 
 import Notification from "./pages/Notification";
 import Payment from "./pages/Payment";
-
+import { AuthProvider } from "./contexts/AuthContext.jsx";
 function App() {
   return (
     <BrowserRouter>
-      <Routes>
+     <AuthProvider>
+       <Routes>
         {/* home */}
         <Route element={<HomeLayout />}>
           <Route path="/" element={<Home />} />
@@ -187,6 +188,7 @@ function App() {
           />
         </Route>
       </Routes>
+     </AuthProvider>
     </BrowserRouter>
   );
 }

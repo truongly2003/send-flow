@@ -24,4 +24,10 @@ public interface SubscriptionRepository extends JpaRepository<Subscription, Long
     @Query("SELECT s FROM Subscription s WHERE s.user.id = :userId " +
            "AND s.status = :status AND s.startTime <= :now AND s.endTime >= :now")
     Optional<Subscription> findActiveSubscription(Long userId,SubscriptionStatus status, LocalDateTime now);
+
+    // đếm subscription
+    @Query("SELECT COUNT(DISTINCT s.user.id) FROM Subscription s WHERE s.status = :status")
+    long countDistinctByStatus(@Param("status") SubscriptionStatus status);
+
+    long countByStatus(SubscriptionStatus status);
 }

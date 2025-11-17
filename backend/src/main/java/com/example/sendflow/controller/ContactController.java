@@ -6,14 +6,10 @@ import com.example.sendflow.dto.response.ContactResponse;
 import com.example.sendflow.dto.response.PagedResponse;
 import com.example.sendflow.service.IContactService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/contact")

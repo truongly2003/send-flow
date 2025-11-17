@@ -2,6 +2,7 @@ package com.example.sendflow.repository;
 
 import com.example.sendflow.dto.response.CampaignResponse;
 import com.example.sendflow.entity.Campaign;
+import com.example.sendflow.enums.CampaignStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
@@ -37,6 +38,14 @@ public interface CampaignRepository extends JpaRepository<Campaign, Long> {
 
     @Query("SELECT COUNT(c) FROM Campaign c WHERE c.template.id = :templateId")
     Integer countByTemplateId(Long templateId);
+
+    List<Campaign> getCampaignsByUserId(Long userId);
+    // đếm số campaign complete
+    long countByUserIdAndStatus(Long userId, CampaignStatus status);
+    // đêm tổng số campaign
+    long countByUserId(Long userId);
+
+    long countByStatus(CampaignStatus status);
 }
 
 

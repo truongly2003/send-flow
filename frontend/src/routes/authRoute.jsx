@@ -1,11 +1,11 @@
 import { Navigate } from "react-router-dom";
 import PropTypes from "prop-types";
-import { useAuth } from "../hooks/useAuth";
+import { useAuth } from "@/contexts/AuthContext";
 // route user login
 export function ProtectedRoute({ children }) {
-    const currentUser = useAuth();
+  const { user } = useAuth();
 
-  if (!currentUser) return <Navigate to="/login" replace />;
+  if (!user) return <Navigate to="/login" replace />;
   return children;
 }
 ProtectedRoute.propTypes = {
@@ -13,9 +13,9 @@ ProtectedRoute.propTypes = {
 };
 // route admin
 export function AdminRoute({ children }) {
-  const currentUser = useAuth();
-  if (!currentUser) return <Navigate to="/login" replace />;
-  if (currentUser.role !== "ADMIN") return <Navigate to="/dashboard" replace />;
+  const {user} = useAuth();
+  if (!user) return <Navigate to="/login" replace />;
+  if (user.role !== "ADMIN") return <Navigate to="/dashboard" replace />;
   return children;
 }
 AdminRoute.propTypes = {
@@ -23,9 +23,10 @@ AdminRoute.propTypes = {
 };
 // route client
 export function UserRoute({ children }) {
-  const currentUser = useAuth();
-  if (!currentUser) return <Navigate to="/login" replace />;
-  if (currentUser.role !== "USER") return <Navigate to="/admin/dashboard" replace />;
+  const {user} = useAuth();
+  if (!user) return <Navigate to="/login" replace />;
+  if (user.role !== "USER")
+    return <Navigate to="/admin/dashboard" replace />;
   return children;
 }
 UserRoute.propTypes = {

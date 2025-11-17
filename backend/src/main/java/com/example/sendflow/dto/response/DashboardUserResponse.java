@@ -6,37 +6,18 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Data
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
 public class DashboardUserResponse {
-    // Subscription / Plan
-    private String planName;
-    private String planStatus; // active, expiring, expired
-    private int daysRemaining;
-    private int totalQuota;
-    private int usedQuota;
-    private int remainingQuota;
-
-    // Campaign
-    private int totalCampaigns;
-    private int sentCampaigns;
-    private int draftCampaigns;
-    private int totalEmailsSent;
-    private int totalEmailsFailed;
-
-    // Contacts
-    private int totalContacts;
-    private int activeContacts;
-    private int unsubscribedContacts;
-    private int bouncedContacts;
-
-
-
-    // SendLog
-    private int totalSentLogs;
-    private int totalSuccess;
-    private int totalFailed;
-    private int totalBounce;
+    private long limitMail; // hạn mức gửi mail
+    private long useMail; // đã dùng
+    private long totalEmail;
+    private long totalContacts;
+    private long totalCampaigns;
+    private long totalTemplate;
+    private double totalCampaignRating; // tỷ lệ gửi chiến dịch
 }

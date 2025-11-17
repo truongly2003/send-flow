@@ -11,15 +11,21 @@ import {
   Clock,
   BarChart3,
   ArrowUpRight,
+  FileText
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { subscriptionApi } from "@services/SubscriptionApi";
 import { formatVNDate } from "@configs/formatVNDate";
+import { dashBoardApi } from "@/services/DashBoardApi";
+import { campaignApi } from "@/services/CampaignApi";
+
+import { Link } from "react-router-dom";
 
 function Dashboard() {
   const { userId } = useAuth();
   const [currentSubscription, setCurrentSubscription] = useState(null);
-
+  const [dashboardData, setDashBoardData] = useState(null);
+  const [campaigns, setCampaigns] = useState([]);
   const fetchCurrentSubscription = async () => {
     try {
       const response = await subscriptionApi.getSubscriptionByUserId(userId);
@@ -28,48 +34,29 @@ function Dashboard() {
       console.log(err);
     }
   };
+  const fetchDashBoardUser = async () => {
+    try {
+      const response = await dashBoardApi.getDashBoardUser(userId);
+      setDashBoardData(response.data);
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  const fetchCampaign = async () => {
+    try {
+      const response = await campaignApi.getAllCampaign(userId);
+      setCampaigns(response.data.slice(0,3));
+    } catch (err) {
+      console.log(err);
+    }
+  };
   useEffect(() => {
     if (!userId) return;
     fetchCurrentSubscription();
+    fetchDashBoardUser();
+    fetchCampaign();
   }, [userId]);
-
-  const [dashboardData] = useState({
-    quota: {
-      total: 10000,
-      used: 6450,
-      remaining: 3550,
-      percentage: 64.5,
-    },
-    stats: {
-      totalEmailsSent: 6450,
-      totalCampaigns: 23,
-      totalContacts: 1250,
-      successRate: 94.2,
-    },
-    recentCampaigns: [
-      {
-        id: 1,
-        name: "Summer Sale 2025",
-        sent: 1200,
-        rate: 95.5,
-        date: "2025-10-28",
-      },
-      {
-        id: 2,
-        name: "Product Launch",
-        sent: 850,
-        rate: 92.3,
-        date: "2025-10-25",
-      },
-      {
-        id: 3,
-        name: "Newsletter Oct",
-        sent: 980,
-        rate: 96.1,
-        date: "2025-10-20",
-      },
-    ],
-  });
 
   const getStatusColor = (status) => {
     switch (status) {
@@ -87,7 +74,7 @@ function Dashboard() {
     if (percentage >= 60) return "bg-yellow-500";
     return "bg-green-500";
   };
-
+  const percentage = (dashboardData?.useMail / dashboardData?.limitMail) * 100;
   return (
     <div className="min-h-screen bg-gray-950 text-white p-6">
       <div className="max-w-7xl mx-auto">
@@ -151,25 +138,23 @@ function Dashboard() {
               <h2 className="text-xl font-semibold">Hạn mức email</h2>
             </div>
             <span className="text-2xl font-bold text-purple-400">
-              {dashboardData.quota.remaining.toLocaleString()}
+              {dashboardData?.limitMail}
             </span>
           </div>
           <div className="space-y-2">
             <div className="flex justify-between text-sm text-gray-400">
-              <span>
-                Đã sử dụng: {dashboardData.quota.used.toLocaleString()}
-              </span>
-              <span>Tổng: {dashboardData.quota.total.toLocaleString()}</span>
+              <span>Đã sử dụng: {dashboardData?.useMail}</span>
+              <span>Tổng: {dashboardData?.limitMail}</span>
             </div>
             <div className="w-full bg-gray-800 rounded-full h-3 overflow-hidden">
               <div
                 className={`h-full ${getQuotaColor(
-                  dashboardData.quota.percentage
+                  percentage
                 )} transition-all duration-500`}
-                style={{ width: `${dashboardData.quota.percentage}%` }}
+                style={{ width: `${percentage}%` }}
               />
             </div>
-            {dashboardData.quota.percentage >= 80 && (
+            {percentage >= 80 && (
               <p className="text-xs text-yellow-400">
                 ⚠️ Hạn mức sắp hết, vui lòng nâng cấp gói dịch vụ
               </p>
@@ -180,12 +165,12 @@ function Dashboard() {
         {/* Quick Actions */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
           <button className="bg-blue-600 hover:bg-blue-700 transition-colors rounded-xl p-4 flex items-center justify-between group">
-            <div className="flex items-center gap-3">
+            <Link className="flex items-center gap-3">
               <div className="bg-blue-500/20 p-2 rounded-lg">
                 <Plus size={24} />
               </div>
               <span className="font-semibold">Tạo chiến dịch mới</span>
-            </div>
+            </Link>
             <ArrowUpRight
               className="group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform"
               size={20}
@@ -193,12 +178,12 @@ function Dashboard() {
           </button>
 
           <button className="bg-gray-800 hover:bg-gray-700 transition-colors rounded-xl p-4 flex items-center justify-between group border border-gray-700">
-            <div className="flex items-center gap-3">
+            <Link to="/contact-list" className="flex items-center gap-3">
               <div className="bg-green-500/20 p-2 rounded-lg">
                 <Users className="text-green-400" size={24} />
               </div>
               <span className="font-semibold">Thêm liên hệ</span>
-            </div>
+            </Link>
             <ArrowUpRight
               className="group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform"
               size={20}
@@ -220,7 +205,7 @@ function Dashboard() {
         </div>
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
           <div className="bg-gray-900 border border-gray-800 rounded-xl p-5">
             <div className="flex items-center justify-between mb-3">
               <div className="bg-blue-500/10 p-2 rounded-lg">
@@ -229,9 +214,7 @@ function Dashboard() {
               <TrendingUp className="text-green-400" size={18} />
             </div>
             <p className="text-gray-400 text-sm mb-1">Tổng email đã gửi</p>
-            <p className="text-3xl font-bold">
-              {dashboardData.stats.totalEmailsSent.toLocaleString()}
-            </p>
+            <p className="text-3xl font-bold">{dashboardData?.useMail}</p>
           </div>
 
           <div className="bg-gray-900 border border-gray-800 rounded-xl p-5">
@@ -243,7 +226,7 @@ function Dashboard() {
             </div>
             <p className="text-gray-400 text-sm mb-1">Tổng chiến dịch</p>
             <p className="text-3xl font-bold">
-              {dashboardData.stats.totalCampaigns}
+              {dashboardData?.totalCampaigns}
             </p>
           </div>
 
@@ -255,9 +238,18 @@ function Dashboard() {
               <TrendingUp className="text-green-400" size={18} />
             </div>
             <p className="text-gray-400 text-sm mb-1">Tổng liên hệ</p>
-            <p className="text-3xl font-bold">
-              {dashboardData.stats.totalContacts.toLocaleString()}
-            </p>
+            <p className="text-3xl font-bold">{dashboardData?.totalContacts}</p>
+          </div>
+
+          <div className="bg-gray-900 border border-gray-800 rounded-xl p-5">
+            <div className="flex items-center justify-between mb-3">
+              <div className="bg-green-500/10 p-2 rounded-lg">
+                <FileText className="text-green-400" size={20} />
+              </div>
+              <TrendingUp className="text-green-400" size={18} />
+            </div>
+            <p className="text-gray-400 text-sm mb-1">Tổng template</p>
+            <p className="text-3xl font-bold">{dashboardData?.totalTemplate}</p>
           </div>
 
           <div className="bg-gray-900 border border-gray-800 rounded-xl p-5">
@@ -269,7 +261,7 @@ function Dashboard() {
             </div>
             <p className="text-gray-400 text-sm mb-1">Tỷ lệ thành công</p>
             <p className="text-3xl font-bold">
-              {dashboardData.stats.successRate}%
+              {dashboardData?.totalCampaignRating}%
             </p>
           </div>
         </div>
@@ -278,36 +270,40 @@ function Dashboard() {
         <div className="bg-gray-900 border border-gray-800 rounded-xl p-6">
           <h2 className="text-xl font-semibold mb-4">Chiến dịch gần đây</h2>
           <div className="space-y-3">
-            {dashboardData.recentCampaigns.map((campaign) => (
-              <div
-                key={campaign.id}
-                className="flex items-center justify-between p-4 bg-gray-800/50 rounded-lg hover:bg-gray-800 transition-colors cursor-pointer"
-              >
-                <div className="flex items-center gap-4">
-                  <div className="bg-blue-500/10 p-3 rounded-lg">
-                    <Mail className="text-blue-400" size={20} />
+            {campaigns ? (
+              campaigns.map((campaign) => (
+                <div
+                  key={campaign.id}
+                  className="flex items-center justify-between p-4 bg-gray-800/50 rounded-lg hover:bg-gray-800 transition-colors cursor-pointer"
+                >
+                  <div className="flex items-center gap-4">
+                    <div className="bg-blue-500/10 p-3 rounded-lg">
+                      <Mail className="text-blue-400" size={20} />
+                    </div>
+                    <div>
+                      <p className="font-medium">{campaign.name}</p>
+                      <p className="text-sm text-gray-400">
+                        {campaign.createdAt}
+                      </p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="font-medium">{campaign.name}</p>
-                    <p className="text-sm text-gray-400">{campaign.date}</p>
+                  <div className="flex items-center gap-6 text-sm">
+                    <div className="text-right">
+                      <p className="text-gray-400">Đã gửi</p>
+                      <p className="font-semibold">{campaign.sentCount}</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-gray-400">Tỷ lệ</p>
+                      <p className="font-semibold text-green-400">
+                        {(campaign.receivedCount / campaign.sentCount) * 100}%
+                      </p>
+                    </div>
                   </div>
                 </div>
-                <div className="flex items-center gap-6 text-sm">
-                  <div className="text-right">
-                    <p className="text-gray-400">Đã gửi</p>
-                    <p className="font-semibold">
-                      {campaign.sent.toLocaleString()}
-                    </p>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-gray-400">Tỷ lệ</p>
-                    <p className="font-semibold text-green-400">
-                      {campaign.rate}%
-                    </p>
-                  </div>
-                </div>
-              </div>
-            ))}
+              ))
+            ) : (
+              <div>Chưa có chiến dịch nào</div>
+            )}
           </div>
         </div>
       </div>

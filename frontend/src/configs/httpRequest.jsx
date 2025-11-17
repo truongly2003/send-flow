@@ -1,5 +1,4 @@
 import axios from "axios";
-import { useAuth } from "@/hooks/useAuth";
 const httpRequest = axios.create({
   baseURL: "http://localhost:8080/send-flow/api",
   headers: {
@@ -19,10 +18,12 @@ const addRefreshSubscriber = (callback) => {
 };
 
 httpRequest.interceptors.request.use((config) => {
-  const currentUser = useAuth();
-  const token = currentUser?.accessToken
+  const user=JSON.parse(localStorage.getItem("user"))
+  const token = user?.accessToken;
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
+  }else{
+    delete config.headers.Authorization;
   }
   return config;
 });

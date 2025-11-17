@@ -15,4 +15,10 @@ public interface UsageRepository extends JpaRepository<Usage, Long> {
 
     @Query("SELECT SUM(u.emailCount) FROM Usage u WHERE u.subscription.user.id = :userId")
     Long getTotalEmailByUser(@Param("userId") Long userId);
+
+//    @Query("""
+//        SELECT u  FROM Usage u  WHERE u.subscription.id = :subscriptionId
+//    """)
+//    Usage findBySubscription(@Param("subscriptionId") Long subscriptionId);
+    Usage findBySubscriptionId(Long subscriptionId);
 }

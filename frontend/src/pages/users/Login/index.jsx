@@ -7,7 +7,7 @@ import { userApi } from "@/services/UserApi";
 function Login() {
   const [data, setData] = useState({
     email: "",
-    password: "",
+    password: "12345",
   });
 
   const navigate = useNavigate();
@@ -26,8 +26,8 @@ function Login() {
         const user = response.data;
         alert(response.message);
         localStorage.setItem("user", JSON.stringify(user));
-        if (user.role === "ADMIN") navigate("/admin/dashboard");
-        if (user.role === "USER") navigate("/dashboard");
+        if (user.role === "ADMIN")  window.location.href = "/admin/dashboard";
+        if (user.role === "USER")  window.location.href = "/dashboard";
       } else {
         alert(response.message);
         navigate("/login");
