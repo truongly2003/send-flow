@@ -55,6 +55,9 @@ public class User {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Campaign> campaigns;
 
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<Notification> notifications;
+
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
     private SmtpConfig smtpConfig;
 }

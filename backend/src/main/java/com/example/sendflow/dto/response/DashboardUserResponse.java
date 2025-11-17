@@ -32,7 +32,7 @@ public class DashboardUserResponse {
     private int unsubscribedContacts;
     private int bouncedContacts;
 
-   
+
 
     // SendLog
     private int totalSentLogs;

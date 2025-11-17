@@ -24,6 +24,7 @@ public class SmtpConfig {
     private String passwordSmtp;
     private boolean auth;
     private boolean starttls;
+    private String encryption;
     private String fromName;
     private String fromEmail;
     private LocalDateTime updatedAt;

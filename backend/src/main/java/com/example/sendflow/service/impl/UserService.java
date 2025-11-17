@@ -87,7 +87,10 @@ public class UserService implements IUserService {
     public boolean updateUser(Long userId, UserRequest userRequest) {
         User existingUser = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
-        userMapper.updateUserFromRequest(userRequest, existingUser);
+        existingUser.setEmail(userRequest.getEmail());
+        existingUser.setName(userRequest.getName());
+        existingUser.setPhone(userRequest.getPhone());
+        existingUser.setAddress(userRequest.getAddress());
         User updatedUser = userRepository.save(existingUser);
         return true;
     }

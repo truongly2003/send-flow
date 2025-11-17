@@ -29,7 +29,7 @@ const userApi = {
   // register
   register: async (data) => {
     try {
-      const response = await httpRequest.post(`/user`, data);
+      const response = await httpRequest.post(`/user/register`, data);
       return response.data;
     } catch (error) {
       console.log("Register error");

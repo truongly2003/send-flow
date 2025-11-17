@@ -22,7 +22,7 @@ public class CampaignMailConsumer {
 
     @RabbitListener(queues = RabbitConfig.MAIL_QUEUE)
     public void handleSendMailCampaign(MailMessageDto messageDto) {  // Sửa: Nhận Map thay vì String
-        System.out.println("📩 [RabbitMQ] Nhận được message từ queue MAIL_QUEUE: " + messageDto);
+        System.out.println(" [RabbitMQ] Nhận được message từ queue MAIL_QUEUE: " + messageDto);
         SendLog sendLog = logRepository.findById((Long) messageDto.getSendLogId())
                 .orElseThrow(() -> new ResourceNotFoundException("Send log not found"));
         try {

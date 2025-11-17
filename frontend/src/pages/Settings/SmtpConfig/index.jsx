@@ -1,39 +1,64 @@
 import { useState } from "react";
-
+import { smtpApi } from "@/services/smtpApi";
+import {useAuth} from "@/contexts/AuthContext"
 function SmtpConfig() {
+  const {user}=useAuth()
   const [smtpData, setSmtpData] = useState({
-    host: "smtp.gmail.com",
-    port: "587",
-    username: "your-email@gmail.com",
-    password: "",
+    userId:user.userId,
+    smtpHost: "smtp.gmail.com",
+    smtpPort: "587",
+    usernameSmtp: "your-email@gmail.com",
+    passwordSmtp: "",
     encryption: "TLS",
-    senderName: "BlogHub System",
-    replyTo: "noreply@bloghub.com"
+    fromName: "BlogHub System",
+    fromEmail: "noreply@bloghub.com",
   });
 
   const [showPassword, setShowPassword] = useState(false);
+  const [loadingTest, setLoadingTest] = useState(false);
+  const [loadingSave, setLoadingSave] = useState(false);
 
   const handleChange = (e) => {
     setSmtpData({
       ...smtpData,
-      [e.target.name]: e.target.value
+      [e.target.name]: e.target.value,
     });
   };
-
-  const handleTest = () => {
-    alert("Đang kiểm tra kết nối SMTP...");
+// ovphdybzopmxtukn
+  // 🟢 Test SMTP
+  const handleTest = async () => {
+    setLoadingTest(true);
+    try {
+      const response = await smtpApi.testSmtp(smtpData);
+      alert(response.message);
+    } catch (err) {
+      console.log(err)
+      alert(err.response.data.message);
+    }
+    setLoadingTest(false);
   };
 
-  const handleSave = () => {
-    alert("Đã lưu cấu hình SMTP!");
+  // 🟣 Save SMTP
+  const handleSave = async () => {
+    setLoadingSave(true);
+    try {
+      const result = await smtpApi.saveSmtp(smtpData);
+      alert("Đã lưu cấu hình SMTP!");
+      console.log(result);
+    } catch (err) {
+      alert("Lưu cấu hình thất bại!");
+    }
+    setLoadingSave(false);
   };
 
   const handleCancel = () => {
-    alert("Đã hủy thay đổi");
+    if (window.confirm("Bạn có chắc muốn hủy thay đổi?")) {
+      window.location.reload();
+    }
   };
 
   return (
-    <div>
+    <div className="h-screen">
       {/* Warning Alert */}
       <div className="mb-6 bg-yellow-50 border border-yellow-200 rounded-lg p-4 flex gap-3">
         <div className="text-yellow-600 mt-0.5">⚠</div>
@@ -46,55 +71,53 @@ function SmtpConfig() {
       </div>
 
       <div className="space-y-5">
-        {/* Row 1: SMTP Host and Port */}
+        {/* Row 1 */}
         <div className="grid grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium mb-2 text-gray-300">SMTP Host</label>
             <input
               type="text"
-              name="host"
-              value={smtpData.host}
+              name="smtpHost"
+              value={smtpData.smtpHost}
               onChange={handleChange}
-              placeholder="smtp.gmail.com"
-              className="w-full px-3 py-2 bg-gray-900 border border-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-200"
+              className="w-full px-3 py-2 bg-gray-900 border border-gray-700 rounded-md text-gray-200"
             />
           </div>
+
           <div>
             <label className="block text-sm font-medium mb-2 text-gray-300">Port</label>
             <input
               type="text"
-              name="port"
-              value={smtpData.port}
+              name="smtpPort"
+              value={smtpData.smtpPort}
               onChange={handleChange}
-              placeholder="587"
-              className="w-full px-3 py-2 bg-gray-900 border border-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-200"
+              className="w-full px-3 py-2 bg-gray-900 border border-gray-700 rounded-md text-gray-200"
             />
           </div>
         </div>
 
-        {/* Row 2: Username and Password */}
+        {/* Row 2 */}
         <div className="grid grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium mb-2 text-gray-300">Username</label>
             <input
               type="text"
-              name="username"
-              value={smtpData.username}
+              name="usernameSmtp"
+              value={smtpData.usernameSmtp}
               onChange={handleChange}
-              placeholder="your-email@gmail.com"
-              className="w-full px-3 py-2 bg-gray-900 border border-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-200"
+              className="w-full px-3 py-2 bg-gray-900 border border-gray-700 rounded-md text-gray-200"
             />
           </div>
+
           <div>
             <label className="block text-sm font-medium mb-2 text-gray-300">Password</label>
             <div className="relative">
               <input
                 type={showPassword ? "text" : "password"}
-                name="password"
-                value={smtpData.password}
+                name="passwordSmtp"
+                value={smtpData.passwordSmtp}
                 onChange={handleChange}
-                placeholder="••••••••••••"
-                className="w-full px-3 py-2 bg-gray-900 border border-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-200 pr-10"
+                className="w-full px-3 py-2 bg-gray-900 border border-gray-700 rounded-md pr-10 text-gray-200"
               />
               <button
                 type="button"
@@ -107,7 +130,7 @@ function SmtpConfig() {
           </div>
         </div>
 
-        {/* Row 3: Encryption and Sender Name */}
+        {/* Row 3 */}
         <div className="grid grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium mb-2 text-gray-300">Mã hóa</label>
@@ -115,80 +138,59 @@ function SmtpConfig() {
               name="encryption"
               value={smtpData.encryption}
               onChange={handleChange}
-              className="w-full px-3 py-2 bg-gray-900 border border-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-200"
+              className="w-full px-3 py-2 bg-gray-900 border border-gray-700 rounded-md text-gray-200"
             >
               <option value="TLS">TLS</option>
               <option value="SSL">SSL</option>
               <option value="None">None</option>
             </select>
           </div>
+
           <div>
             <label className="block text-sm font-medium mb-2 text-gray-300">Tên người gửi</label>
             <input
               type="text"
-              name="senderName"
-              value={smtpData.senderName}
+              name="fromName"
+              value={smtpData.fromName}
               onChange={handleChange}
-              placeholder="BlogHub System"
-              className="w-full px-3 py-2 bg-gray-900 border border-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-200"
+              className="w-full px-3 py-2 bg-gray-900 border border-gray-700 rounded-md text-gray-200"
             />
           </div>
         </div>
 
-        {/* Row 4: Reply To Email */}
+        {/* Reply To */}
         <div>
           <label className="block text-sm font-medium mb-2 text-gray-300">Email người gửi</label>
           <input
             type="text"
-            name="replyTo"
-            value={smtpData.replyTo}
+            name="fromEmail"
+            value={smtpData.fromEmail}
             onChange={handleChange}
-            placeholder="noreply@bloghub.com"
-            className="w-full px-3 py-2 bg-gray-900 border border-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-200"
+            className="w-full px-3 py-2 bg-gray-900 border border-gray-700 rounded-md text-gray-200"
           />
-        </div>
-
-        {/* Instructions */}
-        <div className="bg-gray-900 border border-gray-700 rounded-lg p-4 mt-6">
-          <h3 className="font-semibold text-gray-200 mb-3">Hướng dẫn cấu hình</h3>
-          <ul className="space-y-2 text-sm text-gray-400">
-            <li className="flex gap-2">
-              <span className="text-purple-400">•</span>
-              <span><strong className="text-gray-300">Gmail:</strong> Sử dụng smtp.gmail.com, port 587, TLS. Cần bật xác thực 2 bước và tạo App Password.</span>
-            </li>
-            <li className="flex gap-2">
-              <span className="text-purple-400">•</span>
-              <span><strong className="text-gray-300">Outlook:</strong> Sử dụng smtp-mail.outlook.com, port 587, TLS.</span>
-            </li>
-            <li className="flex gap-2">
-              <span className="text-purple-400">•</span>
-              <span><strong className="text-gray-300">Yahoo:</strong> Sử dụng smtp.mail.yahoo.com, port 587 hoặc 465, TLS/SSL.</span>
-            </li>
-            <li className="flex gap-2">
-              <span className="text-purple-400">•</span>
-              <span><strong className="text-gray-300">Custom SMTP:</strong> Liên hệ nhà cung cấp hosting để biết thông tin cấu hình chi tiết.</span>
-            </li>
-          </ul>
         </div>
 
         {/* Action Buttons */}
         <div className="flex gap-3 pt-4">
           <button
+            disabled={loadingTest}
             onClick={handleTest}
-            className="px-5 py-2.5 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium transition-colors flex items-center gap-2"
+            className="px-5 py-2.5 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium flex items-center gap-2 disabled:opacity-50"
           >
-            <span>✓</span>
-            Kiểm tra kết nối
+            {loadingTest ? "Đang kiểm tra..." : "✓ Kiểm tra kết nối"}
           </button>
+
           <button
+            disabled={loadingSave}
             onClick={handleSave}
-            className="px-5 py-2.5 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-medium transition-colors"
+            className="px-5 py-2.5 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-medium disabled:opacity-50"
           >
-            Lưu cấu hình
+            {loadingSave ? "Đang lưu..." : "Lưu cấu hình"}
           </button>
+
           <button
             onClick={handleCancel}
-            className="px-5 py-2.5 bg-gray-700 hover:bg-gray-600 text-white rounded-lg font-medium transition-colors"
+            className="px-5 py-2.5 bg-gray-700 hover:bg-gray-600 text-white rounded-lg font-medium"
           >
             Hủy bỏ
           </button>
@@ -197,4 +199,5 @@ function SmtpConfig() {
     </div>
   );
 }
-export default SmtpConfig
+
+export default SmtpConfig;

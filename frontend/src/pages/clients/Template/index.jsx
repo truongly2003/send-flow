@@ -36,10 +36,10 @@ function Template() {
       if (response.code === 2000) {
         setTemplates(response.data);
       } else {
-        setError("Failed to fetch plans");
+        setError("Failed to fetch template");
       }
     } catch (err) {
-      setError("Error fetching plans: " + err.message);
+      setError("Error fetching template: " + err.message);
     } finally {
       setLoading(false);
     }
