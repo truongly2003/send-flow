@@ -8,7 +8,7 @@ import {
   RefreshCw,
 } from "lucide-react";
 import { transactionApi } from "@services/TransactionApi";
-
+import { formatVNDate } from "@configs/formatVNDate";
 import { LoadingSpinner } from "@components/LoadingSpinner";
 import { ErrorDisplay } from "@components/ErrorDisplay";
 function Transaction() {
@@ -241,7 +241,7 @@ function Transaction() {
               <thead className="bg-gray-800/50">
                 <tr>
                   <th className="px-6 py-4 text-left text-sm font-semibold text-gray-300">
-                    Transaction ID
+                    ID
                   </th>
                   <th className="px-6 py-4 text-left text-sm font-semibold text-gray-300">
                     User
@@ -288,7 +288,7 @@ function Transaction() {
                       </div>
                     </td>
                     <td className="px-6 py-4">
-                      <p className="text-white">{transaction.package}</p>
+                      <p className="text-white">{transaction.planName}</p>
                     </td>
                     <td className="px-6 py-4">
                       <p className="font-semibold text-white">
@@ -319,7 +319,7 @@ function Transaction() {
                     </td>
                     <td className="px-6 py-4">
                       <p className="text-sm text-gray-400">
-                        {transaction.createdAt}
+                        {formatVNDate(transaction.createdAt)}
                       </p>
                     </td>
                     <td className="px-6 py-4">

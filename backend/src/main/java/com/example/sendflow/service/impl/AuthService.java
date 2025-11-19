@@ -13,6 +13,8 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+
 @Service
 @RequiredArgsConstructor
 
@@ -33,12 +35,15 @@ public class AuthService implements IAuthService {
         if (!matches) {
             throw new BadCredentialsException("Password is incorrect!");
         }
+        user.setLastLogin(LocalDateTime.now());
+        userRepository.save(user);
         String accessToken = jwtConfig.generateAccessToken(authRequest.getEmail(), authRequest.getPassword());
         String refreshToken = jwtConfig.generateRefreshToken(authRequest.getEmail(), authRequest.getPassword());
         return AuthResponse.builder()
                 .userId(user.getId())
                 .name(user.getName())
                 .email(user.getEmail())
+                .phone(user.getPhone())
                 .accessToken(accessToken)
                 .refreshToken(refreshToken)
                 .role(user.getRole())

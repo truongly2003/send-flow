@@ -2,6 +2,7 @@ package com.example.sendflow.service.impl;
 
 import com.example.sendflow.dto.response.DashboardAdminResponse;
 import com.example.sendflow.dto.response.DashboardUserResponse;
+import com.example.sendflow.dto.response.RevenueResponse;
 import com.example.sendflow.entity.*;
 import com.example.sendflow.enums.CampaignStatus;
 import com.example.sendflow.enums.PaymentStatus;
@@ -12,7 +13,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -63,7 +67,7 @@ public class DashBoardService implements IDashBoardService {
                 .totalCampaignRating(totalCampaignRating)
                 .build();
     }
-
+    // admin
     @Override
     public DashboardAdminResponse getAllDashBoardAdmin() {
         // Tổng số user
@@ -103,5 +107,32 @@ public class DashBoardService implements IDashBoardService {
                 .activeSubscriptions(activeSubscriptions)
                 .successRate((long) successRate)
                 .build();
+    }
+
+    @Override
+    public List<RevenueResponse> getAllRevenue(int year, int month) {
+        List<Object[]> raw=transactionRepository.getRevenueByPlan(year, month);
+        BigDecimal total=raw.stream()
+                .map(r->(BigDecimal) r[2])
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        List<RevenueResponse> result=new ArrayList<>();
+        for(Object[] row: raw){
+            String plan=(String) row[0];
+            Long subscribers=(Long) row[1];
+            BigDecimal revenue =(BigDecimal) row[2];
+            double percent=total.compareTo(BigDecimal.ZERO)==0
+                    ? 0
+                    : revenue.multiply(BigDecimal.valueOf(100))
+                    .divide(total,2, RoundingMode.HALF_UP)
+                    .doubleValue();
+
+            result.add(new RevenueResponse(
+                    plan,
+                    subscribers,
+                    revenue,
+                    percent
+            ));
+        }
+        return result;
     }
 }

@@ -6,10 +6,7 @@ import com.example.sendflow.dto.response.DashboardUserResponse;
 import com.example.sendflow.service.IDashBoardService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/dashboard")
@@ -43,6 +40,17 @@ public class DashboardController {
                         .message("success")
                         .data(data)
                         .build()
+        );
+    }
+
+    // revenue
+    @GetMapping("/revenue-by-plan")
+    public ResponseEntity<?> getRevenue(
+            @RequestParam int year,
+            @RequestParam int month) {
+
+        return ResponseEntity.ok(
+                dashboardService.getAllRevenue(year, month)
         );
     }
 }

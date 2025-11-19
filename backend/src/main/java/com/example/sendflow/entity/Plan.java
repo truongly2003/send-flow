@@ -36,6 +36,7 @@ public class Plan {
 
     @Enumerated(EnumType.STRING)
     private Status status;
+
     @Enumerated(EnumType.STRING)
     private Period period;
 

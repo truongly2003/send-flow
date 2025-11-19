@@ -3,6 +3,7 @@ import { Search, Eye, Trash2, Users } from "lucide-react";
 import { LoadingSpinner } from "@components/LoadingSpinner";
 import { ErrorDisplay } from "@components/ErrorDisplay";
 import { userApi } from "@services/UserApi";
+import { formatVNDate } from "@configs/formatVNDate";
 function User() {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -169,7 +170,7 @@ function User() {
                       </div>
                     </td>
                     <td className="px-6 py-4">
-                      <p className="text-sm text-gray-400">{user.lastLogin}</p>
+                      <p className="text-sm text-gray-400">{formatVNDate(user.lastLogin)}</p>
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex items-center justify-end gap-2">

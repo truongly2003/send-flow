@@ -295,7 +295,7 @@ function Dashboard() {
                     <div className="text-right">
                       <p className="text-gray-400">Tỷ lệ</p>
                       <p className="font-semibold text-green-400">
-                        {(campaign.receivedCount / campaign.sentCount) * 100}%
+                        {((campaign.receivedCount / campaign.sentCount) * 100).toFixed(1)}%
                       </p>
                     </div>
                   </div>

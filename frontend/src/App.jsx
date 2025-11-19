@@ -27,168 +27,176 @@ import SendLogAdmin from "@/pages/admins/SendLog";
 
 import Notification from "./pages/Notification";
 import Payment from "./pages/Payment";
+import PaymentSuccess from "./pages/Payment/PaymentSuccess.jsx";
+import PaymentFail from "./pages/Payment/PaymentFail.jsx";
+import PaymentProcessing  from "./pages/Payment/payment-processing.jsx";
+
+
 import { AuthProvider } from "./contexts/AuthContext.jsx";
 function App() {
   return (
     <BrowserRouter>
-     <AuthProvider>
-       <Routes>
-        {/* home */}
-        <Route element={<HomeLayout />}>
-          <Route path="/" element={<Home />} />
-        </Route>
-        {/* payment */}
-        <Route path="/payment" element={<Payment />} />
+      <AuthProvider>
+        <Routes>
+          {/* home */}
+          <Route element={<HomeLayout />}>
+            <Route path="/" element={<Home />} />
+          </Route>
+          {/* payment */}
+          <Route path="/payment" element={<Payment />} />
+          <Route path="/payment-success" element={<PaymentSuccess />} />
+          <Route path="/payment-fail" element={<PaymentFail />} />
+          <Route path="/payment-processing" element={<PaymentProcessing  />} />
 
-        {/* login */}
-        <Route path="/login" element={<Login />} />
-        <Route path="/sign-up" element={<SignUp />} />
-        <Route path="/verify-otp" element={<Otp />} />
+          {/* login */}
+          <Route path="/login" element={<Login />} />
+          <Route path="/sign-up" element={<SignUp />} />
+          <Route path="/verify-otp" element={<Otp />} />
 
-        {/*  */}
-        <Route
-          element={
-            <ProtectedRoute>
-              <DefaultLayout />
-            </ProtectedRoute>
-          }
-        >
-          {/* admin */}
+          {/*  */}
           <Route
-            path="/admin/dashboard"
             element={
-              <AdminRoute>
-                <DashBoardAdmin />
-              </AdminRoute>
+              <ProtectedRoute>
+                <DefaultLayout />
+              </ProtectedRoute>
             }
-          />
-          <Route
-            path="/admin/package"
-            element={
-              <AdminRoute>
-                <PackageAdmin />
-              </AdminRoute>
-            }
-          />
-          <Route
-            path="/admin/transaction"
-            element={
-              <AdminRoute>
-                <Transaction />
-              </AdminRoute>
-            }
-          />
-          <Route
-            path="/admin/user"
-            element={
-              <AdminRoute>
-                <User />
-              </AdminRoute>
-            }
-          />
-          <Route
-            path="/admin/sendlog"
-            element={
-              <AdminRoute>
-                <SendLogAdmin />
-              </AdminRoute>
-            }
-          />
+          >
+            {/* admin */}
+            <Route
+              path="/admin/dashboard"
+              element={
+                <AdminRoute>
+                  <DashBoardAdmin />
+                </AdminRoute>
+              }
+            />
+            <Route
+              path="/admin/package"
+              element={
+                <AdminRoute>
+                  <PackageAdmin />
+                </AdminRoute>
+              }
+            />
+            <Route
+              path="/admin/transaction"
+              element={
+                <AdminRoute>
+                  <Transaction />
+                </AdminRoute>
+              }
+            />
+            <Route
+              path="/admin/user"
+              element={
+                <AdminRoute>
+                  <User />
+                </AdminRoute>
+              }
+            />
+            <Route
+              path="/admin/sendlog"
+              element={
+                <AdminRoute>
+                  <SendLogAdmin />
+                </AdminRoute>
+              }
+            />
 
-          {/* client */}
-          <Route
-            path="/dashboard"
-            element={
-              <UserRoute>
-                <DashBoard />
-              </UserRoute>
-            }
-          />
-          <Route
-            path="/campaign"
-            element={
-              <UserRoute>
-                <Campaign />
-              </UserRoute>
-            }
-          />
-          <Route
-            path="/campaign/:id"
-            element={
-              <UserRoute>
-                <CampaignDetail />{" "}
-              </UserRoute>
-            }
-          />
-          <Route
-            path="/campaign/:id/sendlog"
-            element={
-              <UserRoute>
-                <SendLog />
-              </UserRoute>
-            }
-          />
+            {/* client */}
+            <Route
+              path="/dashboard"
+              element={
+                <UserRoute>
+                  <DashBoard />
+                </UserRoute>
+              }
+            />
+            <Route
+              path="/campaign"
+              element={
+                <UserRoute>
+                  <Campaign />
+                </UserRoute>
+              }
+            />
+            <Route
+              path="/campaign/:id"
+              element={
+                <UserRoute>
+                  <CampaignDetail />{" "}
+                </UserRoute>
+              }
+            />
+            <Route
+              path="/campaign/:id/sendlog"
+              element={
+                <UserRoute>
+                  <SendLog />
+                </UserRoute>
+              }
+            />
 
-          <Route
-            path="/contact-list"
-            element={
-              <UserRoute>
-                <ContactList />
-              </UserRoute>
-            }
-          />
-          <Route
-            path="/contact-list/:id"
-            element={
-              <UserRoute>
-                <Contact />{" "}
-              </UserRoute>
-            }
-          />
-          <Route
-            path="/plan"
-            element={
-              <UserRoute>
-                <Plan />
-              </UserRoute>
-            }
-          />
-          <Route
-            path="/template"
-            element={
-              <UserRoute>
-                <Template />
-              </UserRoute>
-            }
-          />
-          <Route
-            path="/template/:id"
-            element={
-              <UserRoute>
-                <TemplateDetail />{" "}
-              </UserRoute>
-            }
-          />
+            <Route
+              path="/contact-list"
+              element={
+                <UserRoute>
+                  <ContactList />
+                </UserRoute>
+              }
+            />
+            <Route
+              path="/contact-list/:id"
+              element={
+                <UserRoute>
+                  <Contact />{" "}
+                </UserRoute>
+              }
+            />
+            <Route
+              path="/plan"
+              element={
+                <UserRoute>
+                  <Plan />
+                </UserRoute>
+              }
+            />
+            <Route
+              path="/template"
+              element={
+                <UserRoute>
+                  <Template />
+                </UserRoute>
+              }
+            />
+            <Route
+              path="/template/:id"
+              element={
+                <UserRoute>
+                  <TemplateDetail />{" "}
+                </UserRoute>
+              }
+            />
 
-          <Route
-            path="/notification"
-            element={
-              <UserRoute>
-                <Notification />{" "}
-              </UserRoute>
-            }
-          />
-          <Route
-            path="/setting"
-            element={
-              <UserRoute>
-                <Settings />{" "}
-              </UserRoute>
-            }
-          />
-        </Route>
-      </Routes>
-     </AuthProvider>
+            <Route
+              path="/notification"
+              element={
+                <UserRoute>
+                  <Notification />{" "}
+                </UserRoute>
+              }
+            />
+            <Route
+              path="/setting"
+              element={
+                <UserRoute>
+                  <Settings />{" "}
+                </UserRoute>
+              }
+            />
+          </Route>
+        </Routes>
+      </AuthProvider>
     </BrowserRouter>
   );
 }

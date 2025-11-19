@@ -6,9 +6,12 @@ import {
   TrendingUp,
   Activity,
   CheckCircle,
-  XCircle,
 } from "lucide-react";
 import { dashBoardApi } from "@/services/DashBoardApi";
+import { transactionApi } from "@/services/TransactionApi";
+import { formatVNDate } from "@configs/formatVNDate";
+import { formatVND } from "@configs/formatVND";
+
 function Dashboard() {
   const [stats, setStats] = useState({
     totalUsers: 0,
@@ -18,9 +21,12 @@ function Dashboard() {
     activeSubscriptions: 0,
     successRate: 0,
   });
-
+  const [year, setYear] = useState(new Date().getFullYear());
+  const [month, setMonth] = useState(new Date().getMonth() + 1);
   const [recentTransactions, setRecentTransactions] = useState([]);
+  const [revenues, setRevenues] = useState([]);
 
+  //
   const fetchDashBoardAdmin = async () => {
     try {
       const response = await dashBoardApi.getDashBoardAdmin();
@@ -36,70 +42,45 @@ function Dashboard() {
       console.log(err);
     }
   };
+  // transaction
+  const fetchTransactionRecent = async () => {
+    try {
+      const response = await transactionApi.getAllTransaction();
+      setRecentTransactions(response.content.slice(0, 3));
+    } catch (err) {
+      console.log(err);
+    }
+  };
+  // revenue
+  const fetchRevenue = async () => {
+    try {
+      const response = await dashBoardApi.getRevenue(year, month);
+      setRevenues(response);
+    } catch (err) {
+      console.log(err);
+    }
+  };
   useEffect(() => {
     fetchDashBoardAdmin();
-   
-
-    setRecentTransactions([
-      {
-        id: "TXN001",
-        userName: "John Doe",
-        package: "Premium",
-        amount: 299000,
-        status: "completed",
-        date: "2025-10-28 14:30",
-      },
-      {
-        id: "TXN002",
-        userName: "Admin User",
-        package: "Enterprise",
-        amount: 999000,
-        status: "completed",
-        date: "2025-10-27 10:15",
-      },
-      {
-        id: "TXN003",
-        userName: "Jane Smith",
-        package: "Basic",
-        amount: 99000,
-        status: "failed",
-        date: "2025-10-29 16:45",
-      },
-      {
-        id: "TXN004",
-        userName: "Marketing Team",
-        package: "Premium",
-        amount: 299000,
-        status: "pending",
-        date: "2025-10-30 09:20",
-      },
-    ]);
+    fetchTransactionRecent();
   }, []);
+  useEffect(() => {
+    fetchRevenue();
+  }, [year, month]);
 
   const getStatusColor = (status) => {
     switch (status) {
-      case "completed":
+      case "SUCCESS":
         return "text-green-400 bg-green-400/10";
-      case "failed":
+      case "FAILED":
         return "text-red-400 bg-red-400/10";
-      case "pending":
+      case "PENDING":
         return "text-yellow-400 bg-yellow-400/10";
       default:
         return "text-gray-400 bg-gray-400/10";
     }
   };
-
-  const getStatusIcon = (status) => {
-    switch (status) {
-      case "completed":
-        return <CheckCircle size={14} />;
-      case "failed":
-        return <XCircle size={14} />;
-      default:
-        return null;
-    }
-  };
-
+  
   return (
     <div className="min-h-screen bg-gray-950 text-white p-6">
       <div className="max-w-7xl mx-auto">
@@ -193,41 +174,64 @@ function Dashboard() {
         {/* Charts & Tables Row */}
         <div className="grid grid-cols-1 lg:grid-cols-1 gap-6 mb-6">
           {/* Revenue by Package */}
-          <div className="bg-gray-900 border border-gray-800 rounded-xl p-6">
+
+          <div className="bg-gray-900 border border-gray-800 rounded-xl p-6 ">
             <h2 className="text-xl font-bold text-white mb-4">
-              Revenue by Package
+              Revenue by Plan
             </h2>
+            {/* Filters */}
+            <div className="flex gap-3 mb-4">
+              <select
+                value={year}
+                onChange={(e) => setYear(e.target.value)}
+                className="bg-gray-800 text-white px-3 py-2 rounded-lg"
+              >
+                {[2023, 2024, 2025].map((y) => (
+                  <option key={y} value={y}>
+                    {y}
+                  </option>
+                ))}
+              </select>
+
+              <select
+                value={month}
+                onChange={(e) => setMonth(e.target.value)}
+                className="bg-gray-800 text-white px-3 py-2 rounded-lg"
+              >
+                {[...Array(12)].map((_, i) => (
+                  <option key={i + 1} value={i + 1}>
+                    Tháng {i + 1}
+                  </option>
+                ))}
+              </select>
+            </div>
+
             <div className="space-y-4">
-              <div className="flex items-center justify-between p-4 bg-gray-800/50 rounded-lg">
-                <div>
-                  <p className="text-white font-medium">Enterprise</p>
-                  <p className="text-gray-400 text-sm">23 subscribers</p>
-                </div>
-                <div className="text-right">
-                  <p className="text-white font-bold">22,977,000 đ</p>
-                  <p className="text-green-400 text-sm">48.2%</p>
-                </div>
-              </div>
-              <div className="flex items-center justify-between p-4 bg-gray-800/50 rounded-lg">
-                <div>
-                  <p className="text-white font-medium">Premium</p>
-                  <p className="text-gray-400 text-sm">128 subscribers</p>
-                </div>
-                <div className="text-right">
-                  <p className="text-white font-bold">38,272,000 đ</p>
-                  <p className="text-green-400 text-sm">80.3%</p>
-                </div>
-              </div>
-              <div className="flex items-center justify-between p-4 bg-gray-800/50 rounded-lg">
-                <div>
-                  <p className="text-white font-medium">Basic</p>
-                  <p className="text-gray-400 text-sm">45 subscribers</p>
-                </div>
-                <div className="text-right">
-                  <p className="text-white font-bold">4,455,000 đ</p>
-                  <p className="text-green-400 text-sm">9.4%</p>
-                </div>
-              </div>
+              {revenues.length ? (
+                revenues.map((revenue, index) => (
+                  <div
+                    key={index}
+                    className="flex items-center justify-between p-4 bg-gray-800/50 rounded-lg"
+                  >
+                    <div>
+                      <p className="text-white font-medium">
+                        {revenue.planName}
+                      </p>
+                      <p className="text-gray-400 text-sm">
+                        {revenue.subscribers}
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-white font-bold">{formatVND(revenue.revenue)}</p>
+                      <p className="text-green-400 text-sm">
+                        {revenue.percent}
+                      </p>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="">No revenue</div>
+              )}
             </div>
           </div>
         </div>
@@ -278,7 +282,7 @@ function Dashboard() {
                       <p className="text-white">{transaction.userName}</p>
                     </td>
                     <td className="px-6 py-4">
-                      <p className="text-white">{transaction.package}</p>
+                      <p className="text-white">{transaction.planName}</p>
                     </td>
                     <td className="px-6 py-4">
                       <p className="font-semibold text-white">
@@ -288,16 +292,15 @@ function Dashboard() {
                     <td className="px-6 py-4">
                       <span
                         className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(
-                          transaction.status
+                          transaction.paymentStatus
                         )}`}
                       >
-                        {getStatusIcon(transaction.status)}
-                        {transaction.status}
+                        {transaction.paymentStatus}
                       </span>
                     </td>
                     <td className="px-6 py-4">
                       <p className="text-sm text-gray-400">
-                        {transaction.date}
+                        {formatVNDate(transaction.createdAt)}
                       </p>
                     </td>
                   </tr>

@@ -21,7 +21,7 @@ import { planApi } from "@services/PlanApi";
 import { subscriptionApi } from "@services/SubscriptionApi";
 import { LoadingSpinner } from "@components/LoadingSpinner";
 import { ErrorDisplay } from "@components/ErrorDisplay";
-import {formatVNDate} from "@configs/formatVNDate";
+import { formatVNDate } from "@configs/formatVNDate";
 function Plan() {
   const navigate = useNavigate();
   const [plans, setPlans] = useState([]);
@@ -61,9 +61,8 @@ function Plan() {
     fetchCurrentSubscription();
   }, [userId]);
 
-
-  const handleSelectPackage = (planId) => {
-    navigate(`/payment?planId=${planId}`);
+  const handleSelectPackage = (plan) => {
+    navigate(`/payment?planId=${plan.id}`, { state: { plan } });
   };
 
   // Map plan to icon and color based on name or id
@@ -304,7 +303,7 @@ function Plan() {
 
                 {/* CTA Button */}
                 <button
-                  onClick={() => handleSelectPackage(plan.id)}
+                  onClick={() => handleSelectPackage(plan)}
                   disabled={isCurrent}
                   className={`w-full py-3 rounded-lg font-semibold transition-colors flex items-center justify-center gap-2 ${
                     isCurrent ? "bg-gray-700 cursor-not-allowed" : colors.button

@@ -1,4 +1,4 @@
-package com.example.sendflow.dto.response;
+package com.example.sendflow.dto.request;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -9,11 +9,12 @@ import java.math.BigDecimal;
 
 @Data
 @Builder
-@AllArgsConstructor
 @NoArgsConstructor
-public class RevenueResponse {
+@AllArgsConstructor
+public class PaymentRequest {
+    private Long userId;
+    private Long planId;
     private String planName;
-    private Long subscribers;
-    private BigDecimal revenue;
-    private double percent;
+    private BigDecimal amount;
+    private String paymentMethod;
 }

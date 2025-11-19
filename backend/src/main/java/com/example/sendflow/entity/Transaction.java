@@ -33,9 +33,13 @@ public class Transaction {
     private String paymentMethod;
 
     @Enumerated(EnumType.STRING)
-    private PaymentStatus paymentStatus=PaymentStatus.PENDING;
+    private PaymentStatus paymentStatus = PaymentStatus.PENDING;
 
     private String description;
+    // Thêm
+    @Column(name = "reference")
+    private String reference; // vnp_TxnRef
+
     private LocalDateTime updatedAt;
     private LocalDateTime createdAt;
 

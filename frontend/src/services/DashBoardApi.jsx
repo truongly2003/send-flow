@@ -20,6 +20,19 @@ const dashBoardApi = {
       throw error;
     }
   },
+
+  // envenue
+  getRevenue: async (year, month) => {
+    try {
+      const response = await httpRequest.get(
+        `/dashboard/revenue-by-plan?year=${year}&month=${month}`
+      );
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching:", error);
+      throw error;
+    }
+  },
 };
 
 export { dashBoardApi };
