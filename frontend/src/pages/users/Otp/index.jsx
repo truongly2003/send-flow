@@ -1,4 +1,4 @@
-import { userApi } from "@services/UserApi";
+import { userApi } from "@/services/UserApi";
 import { useState, useRef, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Shield, Mail, ArrowLeft } from "lucide-react";
@@ -72,18 +72,18 @@ function Otp() {
         {/* Back Button */}
         <button
           onClick={() => navigate(-1)}
-          className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors mb-8"
+          className="flex items-center gap-2 text-zinc-500 hover:text-white transition-colors mb-8 group"
         >
-          <ArrowLeft size={20} />
+          <ArrowLeft size={20} className="group-hover:-translate-x-1 transition-transform" />
           <span>Quay lại</span>
         </button>
 
         {/* Main Card */}
-        <div className="bg-zinc-900 rounded-2xl p-8 shadow-2xl border border-zinc-800">
+        <div className="bg-gray-900 rounded-2xl p-8 shadow-2xl border border-zinc-800">
           {/* Icon */}
           <div className="flex justify-center mb-6">
-            <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
-              <Shield className="text-white" size={32} />
+            <div className="w-20 h-20 bg-gradient-to-br from-zinc-700 to-zinc-800 rounded-2xl flex items-center justify-center shadow-lg">
+              <Shield className="text-white" size={36} />
             </div>
           </div>
 
@@ -93,7 +93,7 @@ function Otp() {
           </h1>
 
           {/* Email Info */}
-          <div className="flex items-center justify-center gap-2 text-gray-400 mb-6">
+          <div className="flex items-center justify-center gap-2 text-zinc-400 mb-8">
             <Mail size={16} />
             <p className="text-sm">
               Mã đã được gửi đến{" "}
@@ -103,10 +103,10 @@ function Otp() {
 
           {/* OTP Input */}
           <div className="mb-6">
-            <label className="block text-gray-300 text-sm font-medium mb-3">
+            <label className="block text-zinc-300 text-sm font-medium mb-4 text-center">
               Nhập mã OTP (6 chữ số)
             </label>
-            <div className="flex gap-2 justify-center">
+            <div className="flex gap-3 justify-center">
               {otp.map((digit, index) => (
                 <input
                   key={index}
@@ -117,7 +117,7 @@ function Otp() {
                   value={digit}
                   onChange={(e) => handleChange(index, e.target.value)}
                   onKeyDown={(e) => handleKeyDown(index, e)}
-                  className="w-12 h-14 text-center text-2xl font-bold bg-zinc-800 border-2 border-zinc-700 rounded-lg text-white focus:border-blue-500 focus:outline-none transition-all"
+                  className="w-12 h-14 text-center text-2xl font-bold bg-zinc-950 border-2 border-zinc-700 rounded-lg text-white focus:border-white focus:outline-none focus:ring-2 focus:ring-white/20 transition-all"
                 />
               ))}
             </div>
@@ -125,8 +125,11 @@ function Otp() {
 
           {/* Error Message */}
           {error && (
-            <div className="mb-4 p-3 bg-red-500/10 border border-red-500/30 rounded-lg">
-              <p className="text-red-400 text-sm text-center">{error}</p>
+            <div className="mb-6 p-4 bg-red-950/50 border border-red-900/50 rounded-lg flex items-start gap-3">
+              <svg className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+              </svg>
+              <p className="text-red-300 text-sm">{error}</p>
             </div>
           )}
 
@@ -134,25 +137,28 @@ function Otp() {
           <button
             onClick={handleVerify}
             disabled={isLoading || otp.join("").length !== 6}
-            className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold py-3.5 rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed mb-4"
+            className="w-full bg-white text-black font-semibold py-4 rounded-lg hover:bg-zinc-200 active:bg-zinc-300 transition-all duration-200 disabled:bg-zinc-700 disabled:text-zinc-500 disabled:cursor-not-allowed mb-5 flex items-center justify-center gap-2"
           >
             {isLoading ? (
-              <span className="flex items-center justify-center gap-2">
-                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                Đang xác thực...
-              </span>
+              <>
+                <svg className="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                </svg>
+                <span>Đang xác thực...</span>
+              </>
             ) : (
-              "Xác thực"
+              <span>Xác thực</span>
             )}
           </button>
 
           {/* Resend */}
-          <div className="text-center">
-            <p className="text-gray-400 text-sm">
+          <div className="text-center pt-2 border-t border-zinc-800">
+            <p className="text-zinc-400 text-sm mt-4">
               Không nhận được mã?{" "}
               <button
                 onClick={handleResend}
-                className="text-blue-500 hover:text-blue-400 font-medium transition-colors"
+                className="text-white hover:text-zinc-300 font-medium transition-colors underline underline-offset-2"
               >
                 Gửi lại
               </button>
@@ -161,12 +167,17 @@ function Otp() {
         </div>
 
         {/* Footer Info */}
-        <p className="text-gray-500 text-xs text-center mt-6">
-          Mã OTP có hiệu lực trong 5 phút
-        </p>
+        <div className="flex items-center justify-center gap-2 mt-6">
+          <svg className="w-4 h-4 text-zinc-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          <p className="text-zinc-600 text-xs">
+            Mã OTP có hiệu lực trong 5 phút
+          </p>
+        </div>
       </div>
     </div>
   );
 }
 
-export default Otp;
+export default Otp

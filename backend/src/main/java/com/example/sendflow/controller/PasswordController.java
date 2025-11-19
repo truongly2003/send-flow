@@ -1,5 +1,6 @@
 package com.example.sendflow.controller;
 
+import com.example.sendflow.dto.request.ResetPasswordRequest;
 import com.example.sendflow.dto.request.UpdatePasswordRequest;
 import com.example.sendflow.dto.response.ApiResponse;
 import com.example.sendflow.service.IPasswordService;
@@ -32,21 +33,22 @@ public class PasswordController {
     }
     // send otp to email forget-password
     @PostMapping("/forget-password")
-    public ResponseEntity<?> forgetPassword(@RequestParam String email) {
-        boolean forget = passwordService.forgetPassword(email);
-        return forget ? ResponseEntity.ok("OTP send!") :
-                ResponseEntity.badRequest().body("Email is correct");
-    }
-    // reset password
-    @PostMapping("/reset-password")
-    public ResponseEntity<?> resetPassword(@RequestParam String email,@RequestParam String newPassword,@RequestParam String otp) {
-        boolean reset=passwordService.resetPassword(email,newPassword,otp);
-        return reset ? ResponseEntity.ok("Reset password successfully") : ResponseEntity.badRequest().body("Reset password failed");
+    public ResponseEntity<ApiResponse<Boolean>> forgetPassword(@RequestParam String email) {
+        boolean success = passwordService.forgetPassword(email);
+        int code = success ? 2000 : 2001;
+        String message = success ? "OTP sent successfully" : "Failed to send OTP";
+        return ResponseEntity.ok(new ApiResponse<>(code, message, success));
     }
 
-    // check otp test
-    @PostMapping("/verify-check-otp")
-    public ResponseEntity<?> verifyCheckOtp(@RequestParam String otp) {
-        return ResponseEntity.ok("Verify OTP successfully");
+    // reset password
+    @PostMapping("/reset-password")
+    public ResponseEntity<ApiResponse<Boolean>> resetPassword(@RequestBody ResetPasswordRequest request) {
+        boolean success = passwordService.resetPassword(request);
+        int code = success ? 2000 : 2001;
+        String message = success ? "Reset password successfully" : "Reset password failed";
+        return ResponseEntity.ok(new ApiResponse<>(code, message, success));
     }
+
+
+
 }

@@ -72,7 +72,7 @@ const userApi = {
   // change password
   changePassword: async (userId, data) => {
     try {
-      const response = await httpRequest.get(
+      const response = await httpRequest.put(
         `/password/change-password?userId=${userId}`,
         data
       );
@@ -85,8 +85,8 @@ const userApi = {
   // forget password
   forgetPassword: async (email) => {
     try {
-      const response = await httpRequest.get(
-        `/password/forget-password/?email=${email}`
+      const response = await httpRequest.post(
+        `/password/forget-password?email=${email}`
       );
       return response.data;
     } catch (error) {
@@ -95,11 +95,9 @@ const userApi = {
     }
   },
   // reset password
-  resetPassword: async (email, newPassword, otp) => {
+  resetPassword: async (data) => {
     try {
-      const response = await httpRequest.get(
-        `/password/reset-password?email=${email}&newPassword=${newPassword}&otp=${otp}`
-      );
+      const response = await httpRequest.post(`/password/reset-password`, data);
       return response.data;
     } catch (error) {
       console.log("Reset error");

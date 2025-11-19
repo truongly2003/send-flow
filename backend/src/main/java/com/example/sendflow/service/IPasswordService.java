@@ -1,5 +1,6 @@
 package com.example.sendflow.service;
 
+import com.example.sendflow.dto.request.ResetPasswordRequest;
 import com.example.sendflow.dto.request.UpdatePasswordRequest;
 
 public interface IPasswordService {
@@ -7,5 +8,5 @@ public interface IPasswordService {
 
     boolean forgetPassword(String email);
 
-    boolean resetPassword( String email, String newPassword,String otp);
+    boolean resetPassword(ResetPasswordRequest request);
 }

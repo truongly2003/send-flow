@@ -1,6 +1,7 @@
 package com.example.sendflow.service.impl;
 
 
+import com.example.sendflow.dto.request.ResetPasswordRequest;
 import com.example.sendflow.dto.request.UpdatePasswordRequest;
 import com.example.sendflow.entity.EmailVerification;
 import com.example.sendflow.entity.User;
@@ -62,14 +63,14 @@ public class PasswordService implements IPasswordService {
     }
     // verify otp and reset password
     @Override
-    public boolean resetPassword(String email, String newPassword, String otp) {
-        if(!verifyEmail.verifyResetOtp(email,otp)){
+    public boolean resetPassword(ResetPasswordRequest request) {
+        if(!verifyEmail.verifyResetOtp(request.getEmail(),request.getOtp())){
             return false;
         }
-        User user = userRepository.findByEmail(email);
-        user.setPassword(passwordEncoder.encode(newPassword));
+        User user = userRepository.findByEmail(request.getEmail());
+        user.setPassword(passwordEncoder.encode(request.getNewPassword()));
         userRepository.save(user);
-        emailVerificationRepository.deleteByEmail(email);
+        emailVerificationRepository.deleteByEmail(request.getEmail());
         return false;
     }
 }

@@ -6,6 +6,8 @@ import Home from "./pages/Home";
 import Login from "@/pages/users/Login";
 import SignUp from "@/pages/users/SignUp";
 import Otp from "@/pages/users/Otp";
+import ForgetPassword from "@pages/users/ForgetPassword"
+import OtpResetPassword from "@pages/users/ForgetPassword/OtpResetPassword"
 
 import DashBoard from "@/pages/clients/DashBoard";
 import ContactList from "@/pages/clients/ContactList";
@@ -52,6 +54,9 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/sign-up" element={<SignUp />} />
           <Route path="/verify-otp" element={<Otp />} />
+          <Route path="/forgot-password" element={<ForgetPassword />} />
+          <Route path="/reset-password" element={<OtpResetPassword />} />
+
 
           {/*  */}
           <Route

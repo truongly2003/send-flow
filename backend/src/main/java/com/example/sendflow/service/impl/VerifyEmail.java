@@ -101,7 +101,7 @@ public class VerifyEmail implements IVerifyEmail {
         emailVerificationRepository.delete(emailVerification);
         return true;
     }
-    // verify otp
+    // verify otp register
     @Override
     public boolean verifyOtp(String email, String otp) {
         User user = userRepository.findByEmail(email);
