@@ -25,8 +25,9 @@ import { contactListApi } from "@services/contactListApi";
 import { formatVNDate } from "@configs/formatVNDate";
 
 import { useNavigate } from "react-router-dom";
-
+import {useAuth} from "@/contexts/AuthContext"
 function Campaign() {
+  const {userId}=useAuth()
   const navigate = useNavigate();
   const [filterStatus, setFilterStatus] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
@@ -38,7 +39,6 @@ function Campaign() {
   const [error, setError] = useState(null);
   const [showFormModal, setShowFormModal] = useState(false);
 
-  const userId = 1;
   // fet campaign
   const fetchCampaigns = async () => {
     try {
@@ -155,7 +155,7 @@ function Campaign() {
         messageContent: "",
         scheduleTime: "",
         contactListId: "",
-        status: "SCHEDULED",
+        status: "SENDING",
       });
     }
     setShowFormModal(true);
@@ -204,26 +204,21 @@ function Campaign() {
   // handle send campaing mail
   const handleSendCampaignMail = async (id) => {
     try {
-      // 1️⃣ Cập nhật UI ngay khi bắt đầu gửi
       setCampaigns((prevCampaigns) =>
         prevCampaigns.map((campaign) =>
           campaign.id === id ? { ...campaign, status: "SENDING" } : campaign
         )
       );
 
-      // 2️⃣ Gọi API gửi mail
       const response = await campaignApi.sendCampaignMail(id);
 
-      // 3️⃣ Xử lý kết quả trả về
       if (response.code === 2000) {
-        // Gửi thành công
         setCampaigns((prevCampaigns) =>
           prevCampaigns.map((campaign) =>
             campaign.id === id ? { ...campaign, status: "COMPLETED" } : campaign
           )
         );
       } else {
-        // Gửi thất bại (có thể lỗi một phần)
         setCampaigns((prevCampaigns) =>
           prevCampaigns.map((campaign) =>
             campaign.id === id ? { ...campaign, status: "FAILED" } : campaign
@@ -231,7 +226,6 @@ function Campaign() {
         );
       }
     } catch (error) {
-      // 4️⃣ Lỗi trong quá trình gọi API
       setCampaigns((prevCampaigns) =>
         prevCampaigns.map((campaign) =>
           campaign.id === id ? { ...campaign, status: "FAILED" } : campaign
@@ -343,7 +337,7 @@ function Campaign() {
                     </span>
                     <span className="flex items-center gap-1">
                       <Calendar size={14} />
-                      {formatVNDate(campaign.scheduleTime)}
+                      {campaign.scheduleTime &&  formatVNDate(campaign.scheduleTime)}
                     </span>
                   </div>
                 </div>
@@ -504,20 +498,7 @@ function Campaign() {
                   ))}
                 </select>
               </div>
-              <div>
-                <label className="block text-sm mb-1">Thời gian gửi</label>
-                <input
-                  type="datetime-local"
-                  value={newCampaign.scheduleTime}
-                  onChange={(e) =>
-                    setNewCampaign({
-                      ...newCampaign,
-                      scheduleTime: e.target.value,
-                    })
-                  }
-                  className="w-full px-3 sm:px-4 py-2 text-sm sm:text-base bg-gray-800 border border-gray-700 rounded-lg"
-                />
-              </div>
+           
             </div>
 
             <button

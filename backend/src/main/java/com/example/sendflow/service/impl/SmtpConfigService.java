@@ -9,10 +9,12 @@ import jakarta.mail.*;
 import jakarta.mail.internet.InternetAddress;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.Properties;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class SmtpConfigService implements ISmtpConfigService {
@@ -22,6 +24,7 @@ public class SmtpConfigService implements ISmtpConfigService {
     @Override
     public SmtpConfigDto getSmtpConfig(Long userId) {
         SmtpConfig smtpConfig = smtpConfigRepository.findByUserId(userId);
+        log.info(smtpConfig.getUsernameSmtp());
         SmtpConfigDto smtpConfigDto = new SmtpConfigDto();
         smtpConfigDto.setSmtpHost(smtpConfig.getSmtpHost());
         smtpConfigDto.setSmtpPort(smtpConfig.getSmtpPort());

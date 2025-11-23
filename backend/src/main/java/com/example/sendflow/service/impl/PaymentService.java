@@ -39,6 +39,7 @@ public class PaymentService implements IPaymentService {
     //    @Value("${vnpay.returnUrl}")
     private String vnp_ReturnUrl = "http://localhost:8080/send-flow/api/payment/vnpay/return";
     // Trong PaymentService
+    // npx localtunnel --port 8080 --subdomain sendflow
     private String vnp_IpnUrl = "https://new-spiders-admire.loca.lt/send-flow/api/payment/vnpay/ipn";
     //    @Value("${vnpay.baseUrl}")
     private String vnp_BaseUrl = "https://sandbox.vnpayment.vn/paymentv2/vpcpay.html";

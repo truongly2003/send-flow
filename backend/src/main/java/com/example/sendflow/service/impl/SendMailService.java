@@ -42,12 +42,11 @@ public class SendMailService implements ISendMailService {
             // gửi
             Transport.send(message);
             log.info("Email sent successfully to {}", toEmail);
-        } catch (AuthenticationFailedException e) {
-            log.error(" SMTP Authentication failed: {}", e.getMessage());
-            throw new RuntimeException("Invalid SMTP credentials: " + e.getMessage());
-        } catch (MessagingException e) {
-            log.error("Email send failed to {}: {}", toEmail, e.getMessage());
-            throw new RuntimeException("Email send failed: " + e.getMessage());
+        }
+        catch (Exception e){
+            // Tất cả exception đều được ném ra ngoài  Consumer sẽ xử lý chi tiết
+            log.error("Failed to send email to {}: {}", toEmail, e.getMessage());
+            throw e instanceof RuntimeException re ? re : new RuntimeException(e);
         }
 
     }

@@ -5,15 +5,14 @@ import { useNavigate } from "react-router-dom";
 
 import { LoadingSpinner } from "@components/LoadingSpinner";
 import { ErrorDisplay } from "@components/ErrorDisplay";
-
+import {useAuth} from "@/contexts/AuthContext"
 function ContactList() {
   const [showModal, setShowModal] = useState(false);
-
+  const {userId}=useAuth()
   const navigate = useNavigate();
   const [contactLists, setContactLists] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const userId = 1;
 
   const fetchContactList = async () => {
     try {

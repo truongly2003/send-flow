@@ -16,4 +16,5 @@ public class MailMessageDto {
     private String html;
     private Long sendLogId;
     private SmtpConfigDto smtpConfig;
+    private String messageId;
 }

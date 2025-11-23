@@ -104,6 +104,7 @@ public class CampaignService implements ICampaignService {
                 .orElseThrow(() -> new ResourceNotFoundException("Campaign not found"));
         // cập nhật / bắt đầu gửi
         campaign.setStatus(CampaignStatus.SENDING);
+        campaign.setCreatedAt(LocalDateTime.now());
         campaignRepository.save(campaign);
         // lặp qua danh sách cần gửi
         List<Contact> contacts = campaign.getContactList().getContacts();

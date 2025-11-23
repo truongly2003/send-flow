@@ -48,7 +48,6 @@ function Contact() {
       setLoading(false);
     }
   };
-  console.log(contacts);
   useEffect(() => {
     fetchContact();
   }, [list.id, page, size]);
