@@ -20,8 +20,8 @@ public interface CampaignRepository extends JpaRepository<Campaign, Long> {
                     c.messageContent,
                     t.name,
                     cl.name,
-                    COUNT(sl.id),
-                    SUM(CASE WHEN sl.status = com.example.sendflow.enums.EventStatus.DELIVERED THEN 1 ELSE 0 END),
+                    COUNT(ct.id),
+                    SUM(CASE WHEN sl.campaign.id = c.id AND sl.sentAt IS NOT NULL THEN 1 ELSE 0 END),
                     c.scheduleTime,
                     c.createdAt,
                     c.status
@@ -32,7 +32,7 @@ public interface CampaignRepository extends JpaRepository<Campaign, Long> {
                 LEFT JOIN cl.contacts ct
                 LEFT JOIN ct.sendLogs sl
                 WHERE c.user.id = :userId
-                GROUP BY c.id, c.user.id, c.name, c.messageContent, t.name, cl.name, c.scheduleTime, c.createdAt
+                GROUP BY c.id, c.user.id, c.name, c.messageContent, t.name, cl.name, c.scheduleTime, c.createdAt, c.status
             """)
     List<CampaignResponse> findCampaignResponsesByUserId(Long userId);
 

@@ -25,9 +25,9 @@ import { contactListApi } from "@services/contactListApi";
 import { formatVNDate } from "@configs/formatVNDate";
 
 import { useNavigate } from "react-router-dom";
-import {useAuth} from "@/contexts/AuthContext"
+import { useAuth } from "@/contexts/AuthContext";
 function Campaign() {
-  const {userId}=useAuth()
+  const { userId } = useAuth();
   const navigate = useNavigate();
   const [filterStatus, setFilterStatus] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
@@ -155,7 +155,7 @@ function Campaign() {
         messageContent: "",
         scheduleTime: "",
         contactListId: "",
-        status: "SENDING",
+        status: "SCHEDULED",
       });
     }
     setShowFormModal(true);
@@ -246,7 +246,6 @@ function Campaign() {
     return matchesStatus && matchesSearch;
   });
 
- 
   // -------------------- UI --------------------
   if (loading) {
     return <LoadingSpinner message="Đang tải chiến dịch..." />;
@@ -337,47 +336,57 @@ function Campaign() {
                     </span>
                     <span className="flex items-center gap-1">
                       <Calendar size={14} />
-                      {campaign.scheduleTime &&  formatVNDate(campaign.scheduleTime)}
+                      {campaign.createdAt && formatVNDate(campaign.createdAt)}
                     </span>
                   </div>
                 </div>
                 <div className="flex items-center gap-2 w-full sm:w-auto">
                   {getStatusBadge(campaign.status)}
-                  <button
-                    onClick={() => handleViewDetail(campaign)}
-                    className="px-2 sm:px-3 py-2 bg-gray-800 hover:bg-gray-700 rounded-lg flex items-center gap-2"
-                    title="Xem chi tiết"
-                  >
-                    <Eye size={16} sm:size={18} />
-                  </button>
-                  <button
-                    onClick={() => handleOpenForm(campaign)}
-                    className="px-2 sm:px-3 py-2 bg-gray-800 hover:bg-gray-700 rounded-lg flex items-center gap-2"
-                    title="Chỉnh sửa"
-                  >
-                    <Edit size={16} sm:size={18} />
-                  </button>
-                  <button
-                    onClick={() => handleDeleteCampaign(campaign.id)}
-                    className="px-2 sm:px-3 py-2 bg-red-600 hover:bg-red-700 rounded-lg flex items-center gap-2"
-                    title="Xóa"
-                  >
-                    <Trash2 size={16} sm:size={18} />
-                  </button>
-                  <button
+                  {campaign.status !== "SCHEDULED" && (
+                    <button
+                      onClick={() => handleViewDetail(campaign)}
+                      className="px-2 sm:px-3 py-2 bg-gray-800 hover:bg-gray-700 rounded-lg flex items-center gap-2"
+                      title="Xem chi tiết"
+                    >
+                      <Eye size={16} sm:size={18} />
+                    </button>
+                  )}
+                  {campaign.status === "SCHEDULED" && (
+                    <button
+                      onClick={() => handleOpenForm(campaign)}
+                      className="px-2 sm:px-3 py-2 bg-gray-800 hover:bg-gray-700 rounded-lg flex items-center gap-2"
+                      title="Chỉnh sửa"
+                    >
+                      <Edit size={16} sm:size={18} />
+                    </button>
+                  )}
+                  {campaign.status === "SCHEDULED" && (
+                    <button
+                      onClick={() => handleDeleteCampaign(campaign.id)}
+                      className="px-2 sm:px-3 py-2 bg-red-600 hover:bg-red-700 rounded-lg flex items-center gap-2"
+                      title="Xóa"
+                    >
+                      <Trash2 size={16} sm:size={18} />
+                    </button>
+                  )}
+                 {campaign.status==="SCHEDULED" && ( <button
                     onClick={() => handleSendCampaignMail(campaign.id)}
                     className="px-2 sm:px-3 py-2 bg-green-500 hover:bg-green-700 rounded-lg flex items-center gap-2"
                     title="Gửi"
                   >
                     <Send size={16} sm:size={18} />
-                  </button>
+                  </button>)}
                 </div>
               </div>
 
               <div className="grid grid-cols-3 gap-3 sm:gap-4 pt-3 sm:pt-4 border-t border-gray-800">
                 <div>
                   <p className="text-xs sm:text-sm text-gray-400 mb-1">
-                    Đã gửi
+                   {
+                    campaign.status==="SCHEDULED" && "Chuẩn bị gửi"
+                    || campaign.status==="COMPLETED" && "Đã gửi" 
+                    || campaign.status==="SENDING" && "Đang gửi"
+                   }
                   </p>
                   <p className="text-base sm:text-lg font-semibold">
                     {campaign.sentCount.toLocaleString()}
@@ -498,7 +507,6 @@ function Campaign() {
                   ))}
                 </select>
               </div>
-           
             </div>
 
             <button

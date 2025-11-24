@@ -261,7 +261,7 @@ function Dashboard() {
             </div>
             <p className="text-gray-400 text-sm mb-1">Tỷ lệ thành công</p>
             <p className="text-3xl font-bold">
-              {dashboardData?.totalCampaignRating}%
+              {dashboardData?.totalCampaignRating.toFixed(1)}%
             </p>
           </div>
         </div>
