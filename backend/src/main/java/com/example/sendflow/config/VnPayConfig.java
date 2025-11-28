@@ -10,8 +10,8 @@ public class VnPayConfig {
 
     public VnPayConfig() {
         Dotenv dotenv = Dotenv.load(); // đọc file .env
-        this.tmnCode = dotenv.get("VNPAY_TMN_CODE");
-        this.hashSecret = dotenv.get("VNPAY_HASH_SECRET");
+        this.tmnCode = EnvConfig.get("VNPAY_TMN_CODE");
+        this.hashSecret = EnvConfig.get("VNPAY_HASH_SECRET");
     }
 
     public String getTmnCode() {

@@ -23,9 +23,11 @@ public class JwtConfig {
     private final Key key;
 
     public JwtConfig() {
-        Dotenv dotenv = Dotenv.load();
-        String secret = dotenv.get("SECRET");
 
+        String secret = EnvConfig.get("SECRET");
+        if (secret == null || secret.trim().isEmpty()) {
+            throw new IllegalStateException("JWT_SECRET không được để trống! Set env variable hoặc file .env");
+        }
         this.key = Keys.hmacShaKeyFor(secret.getBytes());
     }
 

@@ -4,8 +4,6 @@ server:
     context-path: /send-flow/api
 
 spring:
-  profiles:
-    active: dev
   application:
     name: send-flow
 
