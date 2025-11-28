@@ -1,15 +1,16 @@
-# Sử dụng Java 17 (hoặc phù hợp với project của mày)
-FROM eclipse-temurin:17-jdk-jammy
-
-
-# Thư mục làm việc bên trong container
+FROM maven:3-openjdk-17 AS build
 WORKDIR /app
 
-# Copy file jar từ thư mục target (khi đã build xong bằng Maven)
-COPY target/*.jar app.jar
+COPY . .
+RUN mvn clean package -DskipTests
 
-# Mở cổng 8080
+
+# Run stage
+
+FROM openjdk:17-jdk-slim
+WORKDIR /app
+
+COPY --from=build /app/target/sendflow-0.0.1-SNAPSHOT.jar sendflow.jar
 EXPOSE 8080
 
-# Lệnh chạy ứng dụng
-ENTRYPOINT ["java", "-jar", "app.jar"]
+ENTRYPOINT ["java","-jar","sendflow.jar"]
