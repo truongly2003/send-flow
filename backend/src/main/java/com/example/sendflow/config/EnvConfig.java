@@ -10,7 +10,7 @@ public class EnvConfig {
     static {
         try {
             dotenv = Dotenv.configure()
-                    .directory(System.getProperty("user.dir"))  // tìm .env ở root project
+                    .ignoreIfMalformed()  // tìm .env ở root project
                     .ignoreIfMissing()        //  không có file thì bỏ qua, dùng System env
                     .load();
         } catch (Exception e) {
