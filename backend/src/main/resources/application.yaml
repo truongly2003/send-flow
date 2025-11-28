@@ -8,11 +8,10 @@ spring:
     name: send-flow
 
   datasource:
-    url: jdbc:mysql://localhost:3306/sendflow
+    url: mysql://root:kEHXUuTuDowhdHOCFEZLaKhHukFzhoCr@turntable.proxy.rlwy.net:14080/railway
     driverClassName: com.mysql.cj.jdbc.Driver
     username: root
-    password: root
-
+    password: kEHXUuTuDowhdHOCFEZLaKhHukFzhoCr
   jpa:
     hibernate:
       ddl-auto: update
