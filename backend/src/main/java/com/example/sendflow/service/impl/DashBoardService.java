@@ -7,6 +7,7 @@ import com.example.sendflow.entity.*;
 import com.example.sendflow.enums.CampaignStatus;
 import com.example.sendflow.enums.PaymentStatus;
 import com.example.sendflow.enums.SubscriptionStatus;
+import com.example.sendflow.exception.ResourceNotFoundException;
 import com.example.sendflow.repository.*;
 import com.example.sendflow.service.IDashBoardService;
 import lombok.RequiredArgsConstructor;
@@ -48,7 +49,10 @@ public class DashBoardService implements IDashBoardService {
                     .build();
         }
         // get usage
-        Usage usage = usageRepository.findBySubscriptionId(sub.get().getId());
+        log.info("Usage for user: {}", sub.get().getId());
+        Usage usage = usageRepository.findBySubscriptionId(sub.get().getId())
+                .orElseThrow(()->new ResourceNotFoundException("usage not found"));
+
         // get template
         List<Template> templates = templateRepository.findAllByUserId(userId);
         // Campaign stats

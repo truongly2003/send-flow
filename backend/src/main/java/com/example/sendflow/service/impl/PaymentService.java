@@ -4,16 +4,10 @@ import com.example.sendflow.config.VnPayConfig;
 import com.example.sendflow.dto.request.PaymentRequest;
 import com.example.sendflow.dto.response.PaymentResponse;
 import com.example.sendflow.dto.response.TransactionResponse;
-import com.example.sendflow.entity.Plan;
-import com.example.sendflow.entity.Subscription;
-import com.example.sendflow.entity.Transaction;
-import com.example.sendflow.entity.User;
+import com.example.sendflow.entity.*;
 import com.example.sendflow.enums.PaymentStatus;
 import com.example.sendflow.enums.SubscriptionStatus;
-import com.example.sendflow.repository.PlanRepository;
-import com.example.sendflow.repository.SubscriptionRepository;
-import com.example.sendflow.repository.TransactionRepository;
-import com.example.sendflow.repository.UserRepository;
+import com.example.sendflow.repository.*;
 import com.example.sendflow.service.IPaymentService;
 import com.example.sendflow.util.VNPayUtil;
 import lombok.RequiredArgsConstructor;
@@ -21,7 +15,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -40,7 +36,8 @@ public class PaymentService implements IPaymentService {
     private String vnp_ReturnUrl = "http://localhost:8080/send-flow/api/payment/vnpay/return";
     // Trong PaymentService
     // npx localtunnel --port 8080 --subdomain sendflow
-    private String vnp_IpnUrl = "https://new-spiders-admire.loca.lt/send-flow/api/payment/vnpay/ipn";
+    // lt --port 8080
+    private String vnp_IpnUrl = "https://ten-dodos-cheer.loca.lt/send-flow/api/payment/vnpay/ipn";
     //    @Value("${vnpay.baseUrl}")
     private String vnp_BaseUrl = "https://sandbox.vnpayment.vn/paymentv2/vpcpay.html";
 
@@ -48,6 +45,7 @@ public class PaymentService implements IPaymentService {
     private final SubscriptionRepository subscriptionRepository;
     private final UserRepository userRepository;
     private final PlanRepository planRepository;
+    private final UsageRepository usageRepository;
 
     // Logic: Tìm user/plan → Tạo txnRef unique -> Save PENDING -> Build params → Return URL
     @Override
@@ -177,15 +175,30 @@ public class PaymentService implements IPaymentService {
             if ("00".equals(responseCode)) {
                 // set status
                 transaction.setPaymentStatus(PaymentStatus.SUCCESS);
+                int months = transaction.getPlan().getPeriod().getMonths();
                 // active subscription
                 Subscription subscription = Subscription.builder()
                         .user(transaction.getUser())
                         .plan(transaction.getPlan())
-                        .startTime(LocalDateTime.now())  // Bắt đầu ngay
-                        .endTime(LocalDateTime.now().plusMonths(transaction.getPlan().getPeriod().ordinal()))  // + tháng từ plan
+                        .startTime(LocalDateTime.now())
+                        .endTime(LocalDateTime.now().plusMonths(months))
                         .status(SubscriptionStatus.ACTIVE)
                         .build();
                 subscriptionRepository.save(subscription);
+
+                // active
+                Usage usage = Usage.builder()
+                        .subscription(subscription)
+                        .period(LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM")))
+                        .emailCount(0)
+                        .templateCount(0)
+                        .contactCount(0)
+                        .campaignCount(0)
+                        .createdAt(LocalDateTime.now())
+                        .updatedAt(LocalDateTime.now())
+                        .build();
+
+                usageRepository.save(usage);
                 transactionRepository.save(transaction);
                 return "00";
             } else {

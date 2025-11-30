@@ -65,7 +65,6 @@ public class UserService implements IUserService {
         Long totalCampaign = (long) (user.getCampaigns() != null ? user.getCampaigns().size() : 0);
 
         Long totalMail = usageRepository.getTotalEmailByUser(userId);
-        assert lastSubscription != null;
         return UserResponse.builder()
                 .id(user.getId())
                 .email(user.getEmail())
@@ -77,9 +76,10 @@ public class UserService implements IUserService {
                 .totalCampaign(totalCampaign)
                 .totalEmailSend(totalMail)
                 .isActive(user.isActive())
-                .subscriptionStatus(lastSubscription.getStatus())
-                .subscription(lastSubscription.getPlan().getName())
-                .createdAt(lastSubscription.getCreatedAt())
+
+                .subscriptionStatus(lastSubscription != null ? lastSubscription.getStatus() : null)
+                .subscription(lastSubscription != null ? lastSubscription.getPlan().getName() : null)
+                .createdAt(lastSubscription != null ? lastSubscription.getCreatedAt() : null)
                 .build();
     }
 

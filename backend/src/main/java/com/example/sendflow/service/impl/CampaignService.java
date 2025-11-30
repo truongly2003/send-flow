@@ -14,18 +14,23 @@ import com.example.sendflow.mapper.CampaignMapper;
 import com.example.sendflow.repository.*;
 import com.example.sendflow.service.ICampaignService;
 import com.example.sendflow.service.ISmtpConfigService;
+import com.example.sendflow.service.IUsageService;
 import lombok.RequiredArgsConstructor;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class CampaignService implements ICampaignService {
@@ -35,6 +40,7 @@ public class CampaignService implements ICampaignService {
     private final UsageRepository usageRepository;
     private final SendLogRepository sendLogRepository;
     private final ISmtpConfigService smtpConfigService;
+    private final IUsageService usageService;
     @Autowired
     private RabbitTemplate rabbitTemplate;
 
@@ -43,42 +49,108 @@ public class CampaignService implements ICampaignService {
         return campaignRepository.findCampaignResponsesByUserId(userId);
     }
 
-    // kiểm tra trước khi tạo chiến dịch
-    private void checkSendCampaign(Long campaignId) {
-        Campaign campaign = campaignRepository.findById(campaignId)
-                .orElseThrow(() -> new ResourceNotFoundException("Campaign not found"));
+    @Override
+    @Transactional
+    public void createCampaign(CampaignRequest campaignRequest) {
 
-        Long userId = campaign.getUser().getId();
-        // kiểm tra gói
-        Subscription subscription = subscriptionRepository.findActiveSubscription(userId, SubscriptionStatus.ACTIVE, LocalDateTime.now())
-                .orElseThrow(() -> new ResourceNotFoundException("Subscription not found"));
+        // 1. get subscription active
+        Long userId = campaignRequest.getUserId();
+        Subscription subscription = subscriptionRepository.findActiveSubscription(
+                userId, SubscriptionStatus.ACTIVE, LocalDateTime.now()
+        ).orElseThrow(() -> new ResourceNotFoundException("Subscription not found"));
         Plan plan = subscription.getPlan();
-        String currentPeriod = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM"));
-        Usage usage = usageRepository.findBySubscriptionAndPeriod(subscription.getId(), currentPeriod)
-                .orElseGet(() -> {
-                    Usage newUsage = new Usage();
-                    newUsage.setSubscription(subscription);
-                    newUsage.setPeriod(currentPeriod);
-                    newUsage.setEmailCount(0);
-                    newUsage.setContactCount(0);
-                    newUsage.setCampaignCount(0);
-                    newUsage.setTemplateCount(0);
-                    usageRepository.save(newUsage);
-                    return newUsage;
-                });
-        int emailToSend = campaign.getContactList().getContacts().size();
-        int totalAfterSend = usage.getEmailCount() + emailToSend;
 
-        if (plan.getMaxEmailsPerMonth() != null && totalAfterSend > plan.getMaxEmailsPerMonth()) {
-            throw new RuntimeException("Maximum emails per month exceeded");
+        // 2. get usage
+        String currentPeriod = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM"));
+        Usage usage = usageRepository.findBySubscriptionAndPeriod(
+                subscription.getId(), currentPeriod
+        ).orElseGet(() -> usageService.createUsage(subscription, currentPeriod));
+
+        // 3. check campaign quota
+        if (plan.getMaxCampaignsPerMonth() != null &&
+            plan.getMaxCampaignsPerMonth() <= usage.getCampaignCount()) {
+            throw new RuntimeException("Maximum campaigns per month exceeded");
         }
-        return;
+
+        // 4. create campaign
+        Campaign campaign = campaignMapper.toCampaign(campaignRequest);
+        campaign.setSubscription(subscription);
+        Campaign campaignSaved = campaignRepository.save(campaign);
+
+        // 5. increment usage campaign
+        usage.setCampaignCount(usage.getCampaignCount() + 1);
+        usage.setUpdatedAt(LocalDateTime.now());
+        usageRepository.save(usage);
     }
 
+    // campaign send mail
     @Override
-    public void createCampaign(CampaignRequest campaignRequest) {
-        Campaign campaign = campaignMapper.toCampaign(campaignRequest);
-        Campaign campaignSaved = campaignRepository.save(campaign);
+    @Transactional
+    public void sendCampaignMail(Long campaignId) {
+
+        // 1. check campaign
+        Campaign campaign = campaignRepository.findById(campaignId)
+                .orElseThrow(() -> new ResourceNotFoundException("Campaign not found"));
+        Subscription subscription = campaign.getSubscription();
+        Plan plan = subscription.getPlan();
+
+        // 2. get usage
+        String currentPeriod = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM"));
+        Usage usage = usageRepository.findBySubscriptionAndPeriod(subscription.getId(), currentPeriod)
+                .orElseThrow(() -> new RuntimeException("Usage record not found"));
+        // 3. check quota
+        List<Contact> contacts = campaign.getContactList().getContacts();
+        int totalContacts = usage.getEmailCount() + contacts.size();
+        if (plan.getMaxCampaignsPerMonth() != null
+            && plan.getMaxEmailsPerMonth() <= totalContacts
+        ) {
+            throw new RuntimeException("Maximum mail per month exceeded");
+        }
+
+        // 4. update campaign
+        campaign.setStatus(CampaignStatus.SENDING);
+        campaign.setCreatedAt(LocalDateTime.now());
+        campaignRepository.save(campaign);
+
+        // 5. iterate contact list: create send log + push in rabbitMQ
+        boolean hasError = false;
+        for (Contact contact : contacts) {
+            try {
+                SendLog sendLog = new SendLog();
+                sendLog.setCampaign(campaign);
+                sendLog.setContact(contact);
+                sendLog.setRecipientEmail(contact.getEmail());
+                sendLog.setStatus(EventStatus.NEW);
+                sendLogRepository.save(sendLog);
+                // smtp
+                SmtpConfig smtpConfig = campaign.getUser().getSmtpConfig();
+                // push in rabbitMQ
+                MailMessageDto messageDto = MailMessageDto.builder()
+                        .sendLogId(sendLog.getId())
+                        .fromEmail(smtpConfig.getUsernameSmtp())
+                        .toEmail(contact.getEmail())
+                        .subject(campaign.getName())
+                        .html(campaign.getMessageContent())
+                        .smtpConfig(smtpConfigService.getSmtpConfig(campaign.getUser().getId()))
+                        .build();
+
+                rabbitTemplate.convertAndSend(RabbitConfig.MAIN_EXCHANGE,
+                        RabbitConfig.MAIL_ROUTING_KEY, messageDto);
+            } catch (Exception e) {
+                hasError = true;
+            }
+
+            // 6. update usage
+            usage.setEmailCount(usage.getEmailCount() + contacts.size());
+            usage.setUpdatedAt(LocalDateTime.now());
+            usageRepository.save(usage);
+
+            // 7. update campaign
+            campaign.setStatus(hasError ? CampaignStatus.FAILED : CampaignStatus.COMPLETED);
+            campaign.setUpdatedAt(LocalDateTime.now());
+            campaignRepository.save(campaign);
+
+        }
     }
 
     @Override
@@ -91,44 +163,28 @@ public class CampaignService implements ICampaignService {
 
     @Override
     public void deleteCampaign(Long campaignId) {
+        // 1. check campaign
         Campaign existingCampaign = campaignRepository.findById(campaignId)
                 .orElseThrow(() -> new ResourceNotFoundException("Campaign not found"));
-        campaignRepository.delete(existingCampaign);
-    }
-
-    // chiến dịch gửi mail
-    @Override
-    public void sendCampaignMail(Long campaignId) {
-        // kiểm tra campaign
-        Campaign campaign = campaignRepository.findById(campaignId)
-                .orElseThrow(() -> new ResourceNotFoundException("Campaign not found"));
-        // cập nhật / bắt đầu gửi
-        campaign.setStatus(CampaignStatus.SENDING);
-        campaign.setCreatedAt(LocalDateTime.now());
-        campaignRepository.save(campaign);
-        // lặp qua danh sách cần gửi
-        List<Contact> contacts = campaign.getContactList().getContacts();
-        for (Contact contact : contacts) {
-            SendLog sendLog = new SendLog();
-
-            sendLog.setCampaign(campaign);
-            sendLog.setContact(contact);
-            sendLog.setRecipientEmail(contact.getEmail());
-            sendLog.setStatus(EventStatus.NEW);
-            sendLogRepository.save(sendLog);
-
-            SmtpConfig smtpConfig=campaign.getUser().getSmtpConfig();
-
-            MailMessageDto messageDto=MailMessageDto.builder()
-                    .sendLogId(sendLog.getId())
-                    .fromEmail(smtpConfig.getUsernameSmtp())
-                    .toEmail(contact.getEmail())
-                    .subject(campaign.getName())
-                    .html(campaign.getMessageContent())
-                    .smtpConfig(smtpConfigService.getSmtpConfig(campaign.getUser().getId()))
-                    .build();
-
-            rabbitTemplate.convertAndSend(RabbitConfig.MAIN_EXCHANGE, RabbitConfig.MAIL_ROUTING_KEY, messageDto);
+        // 2. check status
+        if (existingCampaign.getStatus() != CampaignStatus.DRAFT &&
+            existingCampaign.getStatus() != CampaignStatus.SCHEDULED) {
+            throw new RuntimeException("Cannot delete a campaign that has already been sent");
         }
+        // 3. check subscription
+        User user = existingCampaign.getUser();
+        Subscription subscription = subscriptionRepository.findActiveSubscription(
+                user.getId(), SubscriptionStatus.ACTIVE, LocalDateTime.now()
+        ).orElseThrow(() -> new ResourceNotFoundException("Subscription not found"));
+        // 4. check usage
+        String currentPeriod = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM"));
+        Usage usage = usageRepository.findBySubscriptionAndPeriod(subscription.getId(), currentPeriod)
+                .orElseThrow(() -> new RuntimeException("Usage record not found"));
+        // 5. update usage
+        usage.setCampaignCount(usage.getCampaignCount() - 1);
+        usage.setUpdatedAt(LocalDateTime.now());
+        usageRepository.save(usage);
+        // 6. delete
+        campaignRepository.delete(existingCampaign);
     }
 }

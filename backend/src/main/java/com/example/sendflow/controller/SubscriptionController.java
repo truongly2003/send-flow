@@ -18,6 +18,7 @@ public class SubscriptionController {
         ApiResponse<SubscriptionResponse> apiResponse=ApiResponse.<SubscriptionResponse>builder()
                 .message("Subscription found")
                 .data(subscriptionResponse)
+                .code(2000)
                 .build();
         return ResponseEntity.ok(apiResponse);
     }

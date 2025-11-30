@@ -10,10 +10,12 @@ spring:
     name: send-flow
 
   datasource:
-    url: jdbc:mysql://turntable.proxy.rlwy.net:14080/railway?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC&characterEncoding=UTF-8
+#    url: jdbc:mysql://turntable.proxy.rlwy.net:14080/railway?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC&characterEncoding=UTF-8
+    url: jdbc:mysql://localhost:3306/sendflow
     driverClassName: com.mysql.cj.jdbc.Driver
     username: root
-    password: kEHXUuTuDowhdHOCFEZLaKhHukFzhoCr
+#    password: kEHXUuTuDowhdHOCFEZLaKhHukFzhoCr
+    password: root
   jpa:
     hibernate:
       ddl-auto: update
@@ -39,8 +41,8 @@ spring:
   mail:
     host: smtp.gmail.com
     port: 587
-    username: ${SPRING_MAIL_USERNAME}
-    password: ${SPRING_MAIL_PASSWORD}
+    username: ${EMAIL_USERNAME}
+    password: ${EMAIL_PASSWORD}
     protocol: smtp
     properties:
       mail:

@@ -10,15 +10,17 @@ import java.util.Optional;
 
 @Repository
 public interface UsageRepository extends JpaRepository<Usage, Long> {
-    @Query("SELECT u FROM Usage u WHERE u.subscription = :subscription AND u.period = :period")
-    Optional<Usage> findBySubscriptionAndPeriod(Long subscriptionId, String period);
+    @Query("SELECT u FROM Usage u WHERE u.subscription.id = :subscriptionId AND u.period = :period")
+    Optional<Usage> findBySubscriptionAndPeriod(@Param("subscriptionId") Long subscriptionId,
+                                                @Param("period") String period);
 
     @Query("SELECT SUM(u.emailCount) FROM Usage u WHERE u.subscription.user.id = :userId")
     Long getTotalEmailByUser(@Param("userId") Long userId);
 
-//    @Query("""
+    //    @Query("""
 //        SELECT u  FROM Usage u  WHERE u.subscription.id = :subscriptionId
 //    """)
 //    Usage findBySubscription(@Param("subscriptionId") Long subscriptionId);
-    Usage findBySubscriptionId(Long subscriptionId);
+    Optional<Usage> findBySubscriptionId(Long subscriptionId);
+
 }

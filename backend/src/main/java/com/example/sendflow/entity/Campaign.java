@@ -31,6 +31,10 @@ public class Campaign {
     @JoinColumn(name = "contact_list_id")
     private ContactList contactList;
 
+    @ManyToOne
+    @JoinColumn(name = "subscription_id")
+    private Subscription subscription;
+
     private LocalDateTime scheduleTime;
     private String name;
     private String messageContent;

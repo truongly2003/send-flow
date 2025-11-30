@@ -30,20 +30,21 @@ public class CampaignMailConsumer {
     // Tối đa retry 5 lần cho lỗi tạm thời
     private static final int MAX_RETRY_COUNT = 5;
     private static final String HEADER_RETRY_COUNT = "x-retry-count";
-
+    // receive from campaign
     @RabbitListener(queues = RabbitConfig.MAIL_QUEUE)
     public void handleSendMailCampaign(MailMessageDto messageDto,
                                        @Header(value = HEADER_RETRY_COUNT, required = false, defaultValue = "0")
                                        int retryCount
     ) {
         System.out.println(" [RabbitMQ] Nhận được message từ queue MAIL_QUEUE: " + messageDto);
-
+        // 1. check send log
         SendLog sendLog = logRepository.findById((Long) messageDto.getSendLogId())
                 .orElseThrow(() -> new ResourceNotFoundException("Send log not found"));
         if(sendLog==null) return;
         try {
+            // 2. attach tracking
             String html = buildTrackingHtml(sendLog.getId(), messageDto.getHtml());
-            // Gửi email
+            // 3. send
             sendMailService.sendMailWithSmtp(
                     messageDto.getSmtpConfig(),
                     messageDto.getFromEmail(),
@@ -51,11 +52,12 @@ public class CampaignMailConsumer {
                     messageDto.getSubject(),
                     html
             );
-            // update send log
+            // 4. update send log
             sendLog.setStatus(EventStatus.SENT);
             sendLog.setCreatedAt(LocalDateTime.now());
             logRepository.save(sendLog);
             log.info("Email SENT successfully → {}", messageDto.getToEmail());
+
         } catch (MessagingException e){
             if(retryCount>=MAX_RETRY_COUNT) {
                 handlePermanentFailure(sendLog, "Max retries exceeded: " + e.getMessage());

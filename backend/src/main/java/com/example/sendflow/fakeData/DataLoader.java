@@ -113,7 +113,7 @@ public class DataLoader implements CommandLineRunner {
                 .maxContacts(20)
                 .maxTemplates(20)
                 .maxEmailsPerMonth(20)
-                .period(Period.LIFETIME)
+                .period(Period.MONTHLY)
                 .status(Status.ACTIVE)
                 .build();
         basicPlan = planRepo.save(basicPlan);
@@ -128,7 +128,7 @@ public class DataLoader implements CommandLineRunner {
                 .maxContacts(20)
                 .maxTemplates(20)
                 .maxEmailsPerMonth(20)
-                .period(Period.LIFETIME)
+                .period(Period.YEARLY)
                 .status(Status.ACTIVE)
                 .build();
         proPlan = planRepo.save(proPlan);

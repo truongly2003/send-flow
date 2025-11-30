@@ -2,15 +2,22 @@ package com.example.sendflow.service.impl;
 
 import com.example.sendflow.dto.request.TemplateRequest;
 import com.example.sendflow.dto.response.TemplateResponse;
+import com.example.sendflow.entity.Plan;
+import com.example.sendflow.entity.Subscription;
 import com.example.sendflow.entity.Template;
+import com.example.sendflow.entity.Usage;
+import com.example.sendflow.enums.SubscriptionStatus;
 import com.example.sendflow.exception.ResourceNotFoundException;
 import com.example.sendflow.mapper.TemplateMapper;
-import com.example.sendflow.repository.CampaignRepository;
-import com.example.sendflow.repository.TemplateRepository;
+import com.example.sendflow.repository.*;
 import com.example.sendflow.service.ITemplateService;
+import com.example.sendflow.service.IUsageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -20,7 +27,6 @@ public class TemplateService implements ITemplateService {
     private final TemplateRepository templateRepository;
     private final CampaignRepository campaignRepository;
     private final TemplateMapper templateMapper;
-
     @Override
     public List<TemplateResponse> getTemplates(Long userId) {
         List<Template> templates = templateRepository.findAllByUserId(userId);

@@ -32,7 +32,7 @@ public class Subscription {
     private LocalDateTime endTime;
 
     @Enumerated(EnumType.STRING)
-    private SubscriptionStatus status=SubscriptionStatus.ACTIVE;
+    private SubscriptionStatus status = SubscriptionStatus.ACTIVE;
 
     private LocalDateTime updatedAt;
     private LocalDateTime createdAt;
@@ -48,6 +48,10 @@ public class Subscription {
         this.updatedAt = LocalDateTime.now();
     }
 
+    //    1 subscription has many usage
     @OneToMany(mappedBy = "subscription", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Usage> usages;
+    //    1 subscription has many campaign
+    @OneToMany(mappedBy = "subscription", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<Campaign> campaigns;
 }
