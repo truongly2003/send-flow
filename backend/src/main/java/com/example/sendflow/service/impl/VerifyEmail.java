@@ -2,6 +2,7 @@ package com.example.sendflow.service.impl;
 
 import com.example.sendflow.dto.EmailVerifyDto;
 import com.example.sendflow.entity.EmailVerification;
+import com.example.sendflow.entity.Transaction;
 import com.example.sendflow.entity.User;
 import com.example.sendflow.repository.EmailVerificationRepository;
 import com.example.sendflow.repository.UserRepository;
@@ -13,6 +14,7 @@ import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 @Service
 public class VerifyEmail implements IVerifyEmail {
@@ -27,33 +29,19 @@ public class VerifyEmail implements IVerifyEmail {
         this.mailSender = mailSender;
     }
 
-    private String generateOtp() {
-        return String.valueOf((int) (Math.random() * 900000) + 100000);
-    }
 
     private void sendHtmlEmail(String to, String subject, String htmlContent) {
         MimeMessage message = mailSender.createMimeMessage();
-
         try {
             MimeMessageHelper helper = new MimeMessageHelper(message, true);
             helper.setFrom("truonglykhong@gmail.com");
             helper.setTo(to);
             helper.setSubject(subject);
             helper.setText(htmlContent, true);
-
             mailSender.send(message);
         } catch (MessagingException e) {
             throw new RuntimeException("Failed to send email", e);
         }
-    }
-
-    @Override
-    public void sendMail(EmailVerifyDto emailVerifyDto) {
-        sendHtmlEmail(
-                emailVerifyDto.getToEmail(),
-                emailVerifyDto.getSubject(),
-                emailVerifyDto.getBody()
-        );
     }
 
     // send otp to email forget-password
@@ -91,9 +79,9 @@ public class VerifyEmail implements IVerifyEmail {
         EmailVerification emailVerification = emailVerificationRepository
                 .findByEmail(email)
                 .orElse(null);
-        if(emailVerification == null) return false;
+        if (emailVerification == null) return false;
         // check expiryDate
-        if(emailVerification.getExpiryDate().isBefore(LocalDateTime.now())) {
+        if (emailVerification.getExpiryDate().isBefore(LocalDateTime.now())) {
             emailVerificationRepository.delete(emailVerification);
             return false;
         }
@@ -101,17 +89,18 @@ public class VerifyEmail implements IVerifyEmail {
         emailVerificationRepository.delete(emailVerification);
         return true;
     }
+
     // verify otp register
     @Override
     public boolean verifyOtp(String email, String otp) {
         User user = userRepository.findByEmail(email);
-        if(user == null) return false;
+        if (user == null) return false;
         EmailVerification emailVerification = emailVerificationRepository
                 .findByEmail(email)
                 .orElse(null);
-        if(emailVerification == null) return false;
+        if (emailVerification == null) return false;
         // check expiryDate
-        if(emailVerification.getExpiryDate().isBefore(LocalDateTime.now())) {
+        if (emailVerification.getExpiryDate().isBefore(LocalDateTime.now())) {
             emailVerificationRepository.delete(emailVerification);
             return false;
         }
@@ -122,6 +111,36 @@ public class VerifyEmail implements IVerifyEmail {
 
         emailVerificationRepository.delete(emailVerification);
         return true;
+    }
+
+    // verify invoice
+    @Override
+    public void sendInvoiceEmail(User user, Transaction transaction) {
+        StringBuilder sb = new StringBuilder(512);
+        sb.append("<html>");
+        sb.append("<body style='font-family: Arial, sans-serif; line-height: 1.6;'>");
+        sb.append("<h2 style='color:#4CAF50;'>Hóa đơn thanh toán thành công</h2>");
+        sb.append("<p>Xin chào <b>")
+                .append(user.getName())
+                .append("</b>,</p>");
+        sb.append("<p>Bạn đã thanh toán thành công gói: <b>")
+                .append(transaction.getPlan().getName())
+                .append("</b></p>");
+        sb.append("<p>Số tiền: <b>")
+                .append(transaction.getAmount())
+                .append(" VND</b></p>");
+        sb.append("<p>Mã giao dịch: <b>")
+                .append(transaction.getReference())
+                .append("</b></p>");
+        sb.append("<p>Thời gian: <b>")
+                .append(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")))
+                .append("</b></p>");
+        sb.append("<br/><p>Cảm ơn bạn đã sử dụng dịch vụ của chúng tôi!</p>");
+        sb.append("<hr/><p style='font-size:12px;color:#888;'>LyTruong - Send-Flow SaaS</p>");
+        sb.append("</body>");
+        sb.append("</html>");
+        String subject = "Thanh toán hóa đơn #" + transaction.getReference();
+        sendHtmlEmail(user.getEmail(), subject, sb.toString());
     }
 
 }

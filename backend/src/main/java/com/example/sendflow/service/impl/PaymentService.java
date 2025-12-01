@@ -7,10 +7,14 @@ import com.example.sendflow.dto.response.TransactionResponse;
 import com.example.sendflow.entity.*;
 import com.example.sendflow.enums.PaymentStatus;
 import com.example.sendflow.enums.SubscriptionStatus;
+import com.example.sendflow.exception.ResourceNotFoundException;
 import com.example.sendflow.repository.*;
 import com.example.sendflow.service.IPaymentService;
+import com.example.sendflow.service.ISendMailService;
+import com.example.sendflow.service.IVerifyEmail;
 import com.example.sendflow.util.VNPayUtil;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -22,6 +26,7 @@ import java.util.*;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class PaymentService implements IPaymentService {
@@ -37,7 +42,7 @@ public class PaymentService implements IPaymentService {
     // Trong PaymentService
     // npx localtunnel --port 8080 --subdomain sendflow
     // lt --port 8080
-    private String vnp_IpnUrl = "https://ten-dodos-cheer.loca.lt/send-flow/api/payment/vnpay/ipn";
+    private String vnp_IpnUrl = "https://sendflow.loca.lt/send-flow/api/payment/vnpay/ipn";
     //    @Value("${vnpay.baseUrl}")
     private String vnp_BaseUrl = "https://sandbox.vnpayment.vn/paymentv2/vpcpay.html";
 
@@ -46,8 +51,8 @@ public class PaymentService implements IPaymentService {
     private final UserRepository userRepository;
     private final PlanRepository planRepository;
     private final UsageRepository usageRepository;
-
-    // Logic: Tìm user/plan → Tạo txnRef unique -> Save PENDING -> Build params → Return URL
+    private final NotificationRepository notificationRepository;
+    private final IVerifyEmail iVerifyEmail;
     @Override
     public PaymentResponse createPaymentUrl(PaymentRequest request) {
         try {
@@ -157,56 +162,103 @@ public class PaymentService implements IPaymentService {
 
     // handleIpn: Xử lý IPN (server-to-server) từ VNPay
     // Logic: Validate nghiêm ngặt → Update status → Tạo Subscription nếu success
+    // lt --port 8080 --subdomain sendflow
     @Override
     public String handleIpn(Map<String, String> params) {
         try {
             // 1. Validate checksum
             if (!VNPayUtil.validateSignature(params, params.get("vnp_SecureHash"), vnPayConfig.getHashSecret())) {
+                log.warn("IPN thiếu vnp_SecureHash");
                 return "Invalid signature";
             }
             // get data to params
             String txnRef = params.get("vnp_TxnRef");
             String responseCode = params.get("vnp_ResponseCode");
+
             // Tìm transaction bằng reference
             Transaction transaction = transactionRepository.findByReference(txnRef).orElse(null);
             if (transaction == null) return "Transaction not found";
             // 2. Check trùng IPN
-            if (transaction.getPaymentStatus() == PaymentStatus.SUCCESS) return "Already completed";
+
+            if (transaction.getPaymentStatus() == PaymentStatus.SUCCESS){
+                log.info("IPN trùng, đã xử lý thành công trước đó: {}", txnRef);
+                return "00"; // Đã thành công rồi → trả 00 để VNPAY ngừng gọi
+            }
+            // if success
             if ("00".equals(responseCode)) {
-                // set status
+
+                Plan plan = transaction.getPlan();
+                int months = plan.getPeriod().getMonths();
+
+                // 1. get subscription
+                Subscription currentSub = subscriptionRepository.findActiveSubscription(
+                        transaction.getUser().getId(), SubscriptionStatus.ACTIVE, LocalDateTime.now()
+                ).orElse(null);
+
+                // 2. check subscription + active subscription and usage
+                if (currentSub == null) {
+                    // 2.1 create new
+                    Subscription subscription = Subscription.builder()
+                            .user(transaction.getUser())
+                            .plan(transaction.getPlan())
+                            .startTime(LocalDateTime.now())
+                            .endTime(LocalDateTime.now().plusMonths(months))
+                            .status(SubscriptionStatus.ACTIVE)
+                            .build();
+                    subscriptionRepository.save(subscription);
+
+                    Usage usage = Usage.builder()
+                            .subscription(subscription)
+                            .period(LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM")))
+                            .emailCount(0)
+                            .templateCount(0)
+                            .contactCount(0)
+                            .campaignCount(0)
+                            .maxCampaign(plan.getMaxCampaignsPerMonth())
+                            .maxEmail(plan.getMaxEmailsPerMonth())
+                            .createdAt(LocalDateTime.now())
+                            .updatedAt(LocalDateTime.now())
+                            .build();
+
+                    usageRepository.save(usage);
+                }else {
+                    // 2.2 renew or upgrade
+                    currentSub.setEndTime(currentSub.getEndTime().plusMonths(months));
+                    currentSub.setPlan(plan);
+                    currentSub.setUpdatedAt(LocalDateTime.now());
+                    subscriptionRepository.save(currentSub);
+
+                    Usage usage = usageRepository.findBySubscriptionId(currentSub.getId())
+                            .orElseThrow(() -> new RuntimeException("Usage not found"));
+
+                    usage.setMaxCampaign(usage.getMaxCampaign() + plan.getMaxCampaignsPerMonth());
+                    usage.setMaxEmail(usage.getMaxEmail() + plan.getMaxEmailsPerMonth());
+                    usage.setUpdatedAt(LocalDateTime.now());
+                    usageRepository.save(usage);
+                }
+
                 transaction.setPaymentStatus(PaymentStatus.SUCCESS);
-                int months = transaction.getPlan().getPeriod().getMonths();
-                // active subscription
-                Subscription subscription = Subscription.builder()
-                        .user(transaction.getUser())
-                        .plan(transaction.getPlan())
-                        .startTime(LocalDateTime.now())
-                        .endTime(LocalDateTime.now().plusMonths(months))
-                        .status(SubscriptionStatus.ACTIVE)
-                        .build();
-                subscriptionRepository.save(subscription);
-
-                // active
-                Usage usage = Usage.builder()
-                        .subscription(subscription)
-                        .period(LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM")))
-                        .emailCount(0)
-                        .templateCount(0)
-                        .contactCount(0)
-                        .campaignCount(0)
-                        .createdAt(LocalDateTime.now())
-                        .updatedAt(LocalDateTime.now())
-                        .build();
-
-                usageRepository.save(usage);
+                transaction.setCreatedAt(LocalDateTime.now());
                 transactionRepository.save(transaction);
+                // send invoice
+                iVerifyEmail.sendInvoiceEmail(transaction.getUser(),transaction);
+                // save notification
+                Notification notification = Notification.builder()
+                        .user(transaction.getUser())
+                        .title("Thanh toán hóa đơn")
+                        .body("Bạn đã thanh toán thành công gói "
+                                 + plan.getName() + " (" + months + " tháng).")
+                        .isRead(false)
+                        .createdAt(LocalDateTime.now())
+                        .build();
+                notificationRepository.save(notification);
                 return "00";
             } else {
+                log.info("responseCode ok :{}",responseCode);
                 transaction.setPaymentStatus(PaymentStatus.FAILED);
                 transactionRepository.save(transaction);
                 return "02";
             }
-
         } catch (Exception e) {
             return "99";
         }

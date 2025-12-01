@@ -30,27 +30,4 @@ public class DashboardController {
         );
     }
 
-    // admin
-    @GetMapping("/admin")
-    public ResponseEntity<ApiResponse<DashboardAdminResponse>> getAdminDashboard() {
-        DashboardAdminResponse data = dashboardService.getAllDashBoardAdmin();
-        return ResponseEntity.ok(
-                ApiResponse.<DashboardAdminResponse>builder()
-                        .code(2000)
-                        .message("success")
-                        .data(data)
-                        .build()
-        );
-    }
-
-    // revenue
-    @GetMapping("/revenue-by-plan")
-    public ResponseEntity<?> getRevenue(
-            @RequestParam int year,
-            @RequestParam int month) {
-
-        return ResponseEntity.ok(
-                dashboardService.getAllRevenue(year, month)
-        );
-    }
 }

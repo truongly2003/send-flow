@@ -1,4 +1,4 @@
-package com.example.sendflow.controller;
+package com.example.sendflow.controller.admin;
 
 import com.example.sendflow.dto.request.PlanRequest;
 import com.example.sendflow.dto.response.ApiResponse;
@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/plan")
+@RequestMapping("/admin/plan")
 @RequiredArgsConstructor
 public class PlanController {
     private final IPlanService planService;

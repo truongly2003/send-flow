@@ -62,7 +62,7 @@ public class DashBoardService implements IDashBoardService {
 
 
         return DashboardUserResponse.builder()
-                .limitMail(sub.get().getPlan().getMaxEmailsPerMonth())
+                .limitMail(usage.getMaxEmail())
                 .useMail(usage.getEmailCount())
                 .totalEmail(sub.get().getPlan().getMaxEmailsPerMonth())
                 .totalContacts(contactRepository.countByUserId(userId))
@@ -99,9 +99,6 @@ public class DashBoardService implements IDashBoardService {
         // Tỉ lệ thành công campaign
         long completedCampaigns = campaignRepository.countByStatus(CampaignStatus.COMPLETED);
         double successRate = totalCampaigns > 0 ? (double) completedCampaigns / totalCampaigns * 100 : 0.0;
-
-        //
-        double percentIncrease = 23.0;
 
         return DashboardAdminResponse.builder()
                 .totalUsers(totalUsers)

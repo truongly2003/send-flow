@@ -47,13 +47,17 @@ public class PaymentController {
     }
 
     // POST /vnpay/ipn: IPN từ VNPay (server-to-server)
-    @GetMapping("/vnpay/ipn")  // VNPay dùng POST
+//    @PostMapping("/vnpay/ipn")  // VNPay dùng POST
+    @GetMapping("/vnpay/ipn")
     public ResponseEntity<String> handleIpn(HttpServletRequest request) {
+        System.out.println("xin chao thanh toan vnpay");
         Map<String, String> params =new HashMap<>();
         Enumeration<String> keys = request.getParameterNames();
         while (keys.hasMoreElements()) {
+
             String key = keys.nextElement();
             params.put(key, request.getParameter(key));
+            System.out.println(key + " = " + request.getParameter(key)); // log params
         }
         return ResponseEntity.ok(paymentService.handleIpn(params));
     }

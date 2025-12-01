@@ -2,7 +2,6 @@ package com.example.sendflow.service.impl;
 
 import com.example.sendflow.config.RabbitConfig;
 import com.example.sendflow.dto.MailMessageDto;
-import com.example.sendflow.dto.SmtpConfigDto;
 import com.example.sendflow.dto.request.CampaignRequest;
 import com.example.sendflow.dto.response.CampaignResponse;
 import com.example.sendflow.entity.*;
@@ -27,8 +26,6 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -41,6 +38,8 @@ public class CampaignService implements ICampaignService {
     private final SendLogRepository sendLogRepository;
     private final ISmtpConfigService smtpConfigService;
     private final IUsageService usageService;
+    private final ContactListRepository contactListRepository;
+    private final TemplateRepository templateRepository;
     @Autowired
     private RabbitTemplate rabbitTemplate;
 
@@ -62,13 +61,13 @@ public class CampaignService implements ICampaignService {
 
         // 2. get usage
         String currentPeriod = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM"));
-        Usage usage = usageRepository.findBySubscriptionAndPeriod(
-                subscription.getId(), currentPeriod
-        ).orElseGet(() -> usageService.createUsage(subscription, currentPeriod));
+
+        Usage usage = usageRepository.findBySubscriptionId(subscription.getId())
+                .orElseThrow(() -> new ResourceNotFoundException("Usage not found for subscription"));
 
         // 3. check campaign quota
-        if (plan.getMaxCampaignsPerMonth() != null &&
-            plan.getMaxCampaignsPerMonth() <= usage.getCampaignCount()) {
+        if (usage.getMaxCampaign() != null &&
+            usage.getMaxCampaign() <= usage.getCampaignCount()) {
             throw new RuntimeException("Maximum campaigns per month exceeded");
         }
 
@@ -92,17 +91,16 @@ public class CampaignService implements ICampaignService {
         Campaign campaign = campaignRepository.findById(campaignId)
                 .orElseThrow(() -> new ResourceNotFoundException("Campaign not found"));
         Subscription subscription = campaign.getSubscription();
-        Plan plan = subscription.getPlan();
 
         // 2. get usage
-        String currentPeriod = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM"));
-        Usage usage = usageRepository.findBySubscriptionAndPeriod(subscription.getId(), currentPeriod)
-                .orElseThrow(() -> new RuntimeException("Usage record not found"));
+        Usage usage = usageRepository.findBySubscriptionId(subscription.getId())
+                .orElseThrow(() -> new RuntimeException("Usage not found for subscription"));
+
         // 3. check quota
         List<Contact> contacts = campaign.getContactList().getContacts();
         int totalContacts = usage.getEmailCount() + contacts.size();
-        if (plan.getMaxCampaignsPerMonth() != null
-            && plan.getMaxEmailsPerMonth() <= totalContacts
+        if (usage.getMaxEmail() != null
+            && usage.getMaxEmail() <= totalContacts
         ) {
             throw new RuntimeException("Maximum mail per month exceeded");
         }
@@ -157,7 +155,15 @@ public class CampaignService implements ICampaignService {
     public void updateCampaign(Long campaignId, CampaignRequest campaignRequest) {
         Campaign existingCampaign = campaignRepository.findById(campaignId)
                 .orElseThrow(() -> new ResourceNotFoundException("Campaign not found"));
-        campaignMapper.updateCampaign(campaignRequest, existingCampaign);
+        ContactList contactList = contactListRepository.findById(campaignRequest.getContactListId())
+                .orElseThrow(() -> new ResourceNotFoundException("ContactList not found"));
+        Template template = templateRepository.findById(campaignRequest.getTemplateId())
+                .orElseThrow(() -> new ResourceNotFoundException("Template not found"));
+        existingCampaign.setUpdatedAt(LocalDateTime.now());
+        existingCampaign.setContactList(contactList);
+        existingCampaign.setTemplate(template);
+        existingCampaign.setMessageContent(campaignRequest.getMessageContent());
+        existingCampaign.setName(campaignRequest.getName());
         Campaign campaignSaved = campaignRepository.save(existingCampaign);
     }
 
@@ -178,8 +184,8 @@ public class CampaignService implements ICampaignService {
         ).orElseThrow(() -> new ResourceNotFoundException("Subscription not found"));
         // 4. check usage
         String currentPeriod = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM"));
-        Usage usage = usageRepository.findBySubscriptionAndPeriod(subscription.getId(), currentPeriod)
-                .orElseThrow(() -> new RuntimeException("Usage record not found"));
+        Usage usage = usageRepository.findBySubscriptionId(subscription.getId())
+                .orElseThrow(() -> new RuntimeException("Usage not found for subscription"));
         // 5. update usage
         usage.setCampaignCount(usage.getCampaignCount() - 1);
         usage.setUpdatedAt(LocalDateTime.now());

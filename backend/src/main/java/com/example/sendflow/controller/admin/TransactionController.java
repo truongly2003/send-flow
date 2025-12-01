@@ -1,4 +1,4 @@
-package com.example.sendflow.controller;
+package com.example.sendflow.controller.admin;
 
 import com.example.sendflow.dto.response.PagedResponse;
 import com.example.sendflow.dto.response.TransactionResponse;
@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/transaction")
+@RequestMapping("/admin/transaction")
 @RequiredArgsConstructor
 public class TransactionController {
     private final ITransactionService transactionService;

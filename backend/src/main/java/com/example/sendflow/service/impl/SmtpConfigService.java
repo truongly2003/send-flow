@@ -2,6 +2,7 @@ package com.example.sendflow.service.impl;
 
 import com.example.sendflow.dto.SmtpConfigDto;
 import com.example.sendflow.entity.SmtpConfig;
+import com.example.sendflow.exception.ResourceNotFoundException;
 import com.example.sendflow.mapper.SmtpConfigMapper;
 import com.example.sendflow.repository.SmtpConfigRepository;
 import com.example.sendflow.service.ISmtpConfigService;
@@ -24,15 +25,23 @@ public class SmtpConfigService implements ISmtpConfigService {
     @Override
     public SmtpConfigDto getSmtpConfig(Long userId) {
         SmtpConfig smtpConfig = smtpConfigRepository.findByUserId(userId);
-        log.info(smtpConfig.getUsernameSmtp());
+        if (smtpConfig == null) {
+            throw new ResourceNotFoundException("SMTP config not found for user: " + userId);
+        }
         SmtpConfigDto smtpConfigDto = new SmtpConfigDto();
-        smtpConfigDto.setSmtpHost(smtpConfig.getSmtpHost());
-        smtpConfigDto.setSmtpPort(smtpConfig.getSmtpPort());
-        smtpConfigDto.setUsernameSmtp(smtpConfig.getUsernameSmtp());
-        smtpConfigDto.setPasswordSmtp(smtpConfig.getPasswordSmtp());
-        smtpConfigDto.setAuth(true);
-        smtpConfigDto.setStarttls(smtpConfig.isStarttls());
-        return smtpConfigDto;
+
+        return SmtpConfigDto.builder()
+                .userId(userId)
+                .smtpHost(smtpConfig.getSmtpHost())
+                .smtpPort(smtpConfig.getSmtpPort())
+                .usernameSmtp(smtpConfig.getUsernameSmtp())
+                .passwordSmtp(smtpConfig.getPasswordSmtp())
+                .encryption(smtpConfig.getEncryption())
+                .fromName(smtpConfig.getFromName())
+                .fromEmail(smtpConfig.getFromEmail())
+                .auth(smtpConfig.isAuth())
+                .starttls(smtpConfig.isStarttls())
+                .build();
     }
 
     @Override

@@ -23,7 +23,7 @@ public class Notification {
     private String body;
     @Column(name = "isRead")
     private boolean isRead = true;
-    private LocalDateTime created;
+    private LocalDateTime createdAt;
     @Enumerated(EnumType.STRING)
     private NotificationStatus status;
 

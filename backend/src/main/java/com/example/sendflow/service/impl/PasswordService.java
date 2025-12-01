@@ -11,6 +11,7 @@ import com.example.sendflow.service.IPasswordService;
 import com.example.sendflow.service.IVerifyEmail;
 import com.example.sendflow.util.OtpUtil;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -23,7 +24,7 @@ public class PasswordService implements IPasswordService {
     private final UserRepository userRepository;
     private final EmailVerificationRepository emailVerificationRepository;
     private final IVerifyEmail verifyEmail;
-
+    @Autowired
     private BCryptPasswordEncoder passwordEncoder;
     // change password
     @Override
@@ -71,6 +72,6 @@ public class PasswordService implements IPasswordService {
         user.setPassword(passwordEncoder.encode(request.getNewPassword()));
         userRepository.save(user);
         emailVerificationRepository.deleteByEmail(request.getEmail());
-        return false;
+        return true;
     }
 }

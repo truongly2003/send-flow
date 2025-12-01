@@ -1,11 +1,10 @@
 package com.example.sendflow.service;
 
 import com.example.sendflow.dto.EmailVerifyDto;
+import com.example.sendflow.entity.Transaction;
 import com.example.sendflow.entity.User;
 
 public interface IVerifyEmail {
-    void sendMail(EmailVerifyDto emailVerifyDto);
-
     // verify register
     void sendVerificationEmail(User user, String otp);
 
@@ -16,4 +15,7 @@ public interface IVerifyEmail {
     boolean verifyResetOtp(String email, String otp);
     // verify otp register
     boolean verifyOtp(String email,String otp);
+
+    // verify Invoice
+    void sendInvoiceEmail(User user, Transaction transaction);
 }

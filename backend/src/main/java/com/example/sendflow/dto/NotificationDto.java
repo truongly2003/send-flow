@@ -19,6 +19,6 @@ public class NotificationDto {
     private String title;
     private String body;
     private boolean isRead;
-    private LocalDateTime created;
+    private LocalDateTime createdAt;
     private NotificationStatus status;
 }

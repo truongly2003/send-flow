@@ -1,14 +1,12 @@
 package com.example.sendflow.controller;
 
 import com.example.sendflow.dto.SmtpConfigDto;
+import com.example.sendflow.dto.response.ApiResponse;
 import com.example.sendflow.entity.SmtpConfig;
 import com.example.sendflow.service.ISmtpConfigService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
 
@@ -34,4 +32,14 @@ public class SmtpController {
             );
         }
     }
+    @GetMapping("/{userId}")
+    public ResponseEntity<ApiResponse<SmtpConfigDto>> getSmtpConfig(@PathVariable Long userId) {
+        ApiResponse<SmtpConfigDto> apiResponse=ApiResponse.<SmtpConfigDto>builder()
+                .code(2000)
+                .message("OK")
+                .data(smtpConfigService.getSmtpConfig(userId))
+                .build();
+        return ResponseEntity.ok(apiResponse);
+    }
+
 }

@@ -29,6 +29,9 @@ public class Usage {
     private Integer campaignCount = 0;
     private Integer templateCount = 0;
 
+    private Integer maxCampaign = 0;
+    private Integer maxEmail = 0;
+
     private LocalDateTime updatedAt;
     private LocalDateTime createdAt;
 
